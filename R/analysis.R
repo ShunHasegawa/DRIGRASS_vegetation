@@ -1,3 +1,29 @@
 rm(list = ls(all = TRUE))
 source("R/packages.R")
 source("R/functions.R")
+
+# process data
+source("R/r1_process_data.R")
+summary(biom_summ2016)  # df for original data (species names were corrected)
+summary(spp_2016)       # species names in 2016
+summary(tld_biom_2016)  # df for total/live/dead biomass
+summary(sp_biom_2016)   # df for each spp
+summary(div_2016)       # df for diversity indices
+summary(pfg_2016)       # df for plant functional groups (PFG)
+
+
+# summary table
+source("R/r1_1_create_summary_tbl.R")
+
+
+# stat and figure
+theme_set(theme_bw())
+source("R/r1_2_1_analysis_total_biomass.R") # anlaysis for total/live/dead biomass
+source("R/r1_2_2_analysis_diversity.R")     # analysis for diversity indices
+source("R/r1_2_3_analysis_pfg.R")           # analysis for pfg ratios
+source("R/r1_2_4_analysis_each_spp.R")      # analysis for dominent spp
+
+
+# Community composition (NMDS and PCA)
+
+

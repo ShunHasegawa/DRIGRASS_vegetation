@@ -10,3 +10,4 @@ library(visreg)       # visualise anova results
 library(multcomp)     # tukey-hsd post-hoc test
 library(ggplot2)      # ggplot
 library(RColorBrewer) # generates color palletes for plot
+library(lsmeans)      # run lease squrare mean tests

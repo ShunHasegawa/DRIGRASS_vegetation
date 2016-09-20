@@ -1,0 +1,98 @@
+---
+title: "DRIGRASS -Summer 2016 summary stats -"
+author: "Shun Hasegawa"
+date: "20 September 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(pander)
+library(plyr)
+library(vegan)
+knitr::opts_chunk$set(echo = TRUE)
+load("../Output/Data/all_obj.RData")
+theme_set(theme_bw()) 
+
+```
+
+
+
+
+## Biomass (Total/Live/Dead)
+
+```{r biom_fig, echo=FALSE, fig.height=4, fig.width=4, results='hide'}
+biomass_fig_list
+```
+
+
+```{r biom_tbl, echo=FALSE, results='asis'}
+pander(anova(dead_m1), justify = "right", caption = "Dead biomass")
+pander(anova(live_m1), justify = "right", caption = "Live biomass")
+pander(anova(tot_m1),  justify = "right", caption = "Total biomass")
+```
+
+
+
+
+## Diversity indices
+
+```{r div_fig, echo=FALSE, fig.height=4, fig.width=4, results='hide'}
+div_fig_list 
+```
+
+
+```{r div_tbl, echo=FALSE, results='asis'}
+pander(anova(h_m1), justify = "right", caption = "Shannon-weaver index")
+pander(anova(s_m1), justify = "right", caption = "Species richness")
+```
+
+
+
+
+## C$_3$ ratios
+
+```{r c3_fig, echo=FALSE, fig.height=4, fig.width=4, results='hide'}
+fig_c3r
+```
+
+
+```{r c3_tbl, echo=FALSE, results='asis'}
+pander(anova(h_m1), justify = "right", caption = "C3 ratios")
+```
+
+
+
+
+## Dominent species (>5% of total biomass)
+
+```{r dom_spp_fig, echo=FALSE, fig.height=7, fig.width=7, results='hide'}
+sp_plot
+```
+
+```{r dom_spp_tbl, echo=FALSE, results='asis'}
+l <- llply(names(m_rain_list), function(x) pander(anova(m_rain_list[[x]]), justify = "right", caption = x))
+l[[1]]
+l[[2]]
+l[[3]]
+l[[4]]
+```
+
+```{r starplot, echo=FALSE, fig.width=8, fig.height=6, results='hide'}
+plot_starplot()
+```
+
+
+
+## NMDS and permANOVA
+
+```{r nmds_fig, echo=FALSE, fig.height=6, fig.width=7, results='hide'}
+plot_nmds_2016()
+```
+
+
+```{r perm, echo=FALSE, results='asis'}
+pander(perm_rxh$aov.tab, justify = "right", caption = "permANOVA for rainfall x herb interaction")
+pander(perm_rain$aov.tab, justify = "right", caption = "permANOVA for rainfall treatment")
+```
+

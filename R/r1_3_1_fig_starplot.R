@@ -34,12 +34,14 @@ str_lab <- sapply(strsplit(plot_spp, split = "[.]"),                       # spl
                     parse(text = paste0("italic(", x[1], "~", x[2], ")"))  # create expression objects
                   })
 
-# star plot  
+# star plot
+plot_starplot <- function(){
+  stars(treat_summary[,-1], location = loc, key.loc=c(3,3),         
+        labels = treat_summary$treatment, key.labels = str_lab,
+        col.segments = spcol, col.stars = treatcol, frame.plot=FALSE,
+        main = "March 2016 biomass", draw.segment = TRUE, cex = 1,lwd = 2)
+}
+
 save_png600(filename = "Output/Figs/star_plot_2016.png", width = 6, height = 6)
-
-starplot<-stars(treat_summary[,-1], location = loc, key.loc=c(3,3),         
-                labels = treat_summary$treatment, key.labels = str_lab,
-                col.segments = spcol, col.stars = treatcol, frame.plot=FALSE,
-                main = "March 2016 biomass", draw.segment = TRUE, cex = 1,lwd = 2)
-
+plot_starplot()
 dev.off()

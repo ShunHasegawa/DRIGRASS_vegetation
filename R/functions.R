@@ -27,6 +27,7 @@ add.factors <- function(x){
 
 
 
+
 # compute SE
 se <- function(...) ci(...)[4]
 
@@ -82,3 +83,8 @@ ggsavePP <- function(filename, plot, width, height){
          height = height, 
          dpi = 600)
 }
+
+
+
+
+save_png600 <- function(...) png(..., res = 600, units = "in")

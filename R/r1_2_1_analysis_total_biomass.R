@@ -107,7 +107,9 @@ biom_m_list <- list(Live = live_m1, Dead = dead_m1, tot_biomass = tot_m1)
 
 # post-hoc test
 biom_posthoc <- ldply(biom_m_list, function(x) {
-  symbols <- cld(glht(x, linfct = mcp(treatment = "Tukey")))$mcletters$Letters # symbols to be used for figures given by post-hoc test
+  
+  # symbols to be used for figures given by post-hoc test
+  symbols <- cld(glht(x, linfct = mcp(treatment = "Tukey")), decreasing = TRUE)$mcletters$Letters 
   d <- data.frame(treatment = names(symbols), symbols, row.names = NULL)
   d$symbols <- as.character(d$symbols)
   return(d)
@@ -140,7 +142,9 @@ biomass_fig_list <- dlply(summary_tld_biom, .(variable), function(x){
     geom_text(aes(y = M + SE, label = symbols), vjust = -.4) +
     
     scale_x_discrete(labels = c("Ambient", "Increased\n(+50%)", "Reduced\n(-50%)",
-                                "Reduced\nfreaquency", "Summer\ndrought")) +
+                                "Reduced\nfrequency", "Summer\ndrought")) +
+    scale_fill_manual(values = rain_cols) +
+    
     theme(legend.position = "none",
           panel.border      = element_rect(color = "black"),
           panel.grid.major  = element_blank(), 

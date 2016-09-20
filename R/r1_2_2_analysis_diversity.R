@@ -83,7 +83,9 @@ div_m_list <- list(H = h_m1, S = s_m1)
 
 # post-hoc test
 div_posthoc <- ldply(div_m_list, function(x) {
-  symbols <- cld(glht(x, linfct = mcp(treatment = "Tukey")))$mcletters$Letters # symbols to be used for figures given by post-hoc test
+  
+  # symbols to be used for figures given by post-hoc test
+  symbols <- cld(glht(x, linfct = mcp(treatment = "Tukey")), decreasing = TRUE)$mcletters$Letters 
   d <- data.frame(treatment = names(symbols), symbols, row.names = NULL)
   d$symbols <- as.character(d$symbols)
   return(d)
@@ -113,7 +115,9 @@ div_fig_list <- dlply(summary_div, .(variable), function(x){
     geom_text(aes(y = M + SE, label = symbols), vjust = -.4) +
     
     scale_x_discrete(labels = c("Ambient", "Increased\n(+50%)", "Reduced\n(-50%)",
-                                "Reduced\nfreaquency", "Summer\ndrought")) +
+                                "Reduced\nfrequency", "Summer\ndrought")) +
+    scale_fill_manual(values = rain_cols) +
+    
     theme(legend.position = "none",
           panel.border      = element_rect(color = "black"),
           panel.grid.major  = element_blank(), 

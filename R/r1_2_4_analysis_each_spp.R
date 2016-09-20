@@ -92,7 +92,9 @@ l_ply(m_rain_list, plot)
 
 # post-hoc test
 spp_posthoc <- ldply(m_rain_list, function(x) {
-  symbols <- cld(glht(x, linfct = mcp(treatment = "Tukey")))$mcletters$Letters # symbols to be used for figures given by post-hoc test
+  
+  # symbols to be used for figures given by post-hoc test
+  symbols <- cld(glht(x, linfct = mcp(treatment = "Tukey")), decreasing = TRUE)$mcletters$Letters 
   d <- data.frame(treatment = names(symbols), symbols, row.names = NULL)
   d$symbols <- as.character(d$symbols)
   return(d)
@@ -129,8 +131,9 @@ sp_plot <- ggplot(summary_spp, aes(x = treatment, y = M, fill = treatment)) +
   geom_text(aes(y = M + SE, label = symbols), vjust = -.4) +
   
   scale_x_discrete(labels = c("Ambient", "Increased\n(+50%)", "Reduced\n(-50%)",
-                              "Reduced\nfreaquency", "Summer\ndrought")) +
+                              "Reduced\nfrequency", "Summer\ndrought")) +
   scale_y_continuous(limits = c(0, 80)) +
+  scale_fill_manual(values = rain_cols) +
   
   theme(legend.position = "none",
         panel.border      = element_rect(color = "black"),

@@ -9,7 +9,7 @@ pfg_2016_ed <- filter(pfg_2016, treatment != "Ambient(no shelter)")
 # analysis ----------------------------------------------------------------
 
 
-# . c3 ratios -------------------------------------------------------------
+# > c3 ratios -------------------------------------------------------------
 
 
 # test rain x herb
@@ -38,8 +38,8 @@ c3r_m3 <- update(c3r_m1, subset = -which.max(pfg_rxh$c3ratio))
 anova(c3r_m3)
 plot(c3r_m3)
 # pretty much the same result as above
-
-
+lsmeans(c3r_m2, pairwise ~ herb | treatment)
+boxplot(c3ratio ~  herb * treatment, data = pfg_rxh)
 
 # . rainfall treatment ----------------------------------------------------
 
@@ -65,8 +65,8 @@ visreg(c3r_by_r_m1)
 
 
 # post-hoc test
-summary(glht(c3r_by_r_m1, linfct = mcp(treatment = "Tukey")))
-symbols <- cld(glht(c3r_by_r_m1, linfct = mcp(treatment = "Tukey")))$mcletters$Letters # symbols to be used for figures given by post-hoc test
+symbols <- cld(glht(c3r_by_r_m1, linfct = mcp(treatment = "Tukey")),  # symbols to be used for figures given by post-hoc test 
+               decreasing = TRUE)$mcletters$Letters 
 c3r_posthoc <- data.frame(treatment = names(symbols), 
                           symbols = as.character(symbols), row.names = NULL)
 
@@ -91,7 +91,8 @@ fig_c3r <- ggplot(summary_pfg, aes(x = treatment, y = M, fill = treatment)) +
   geom_text(aes(y = M + SE, label = symbols), vjust = -.4) +
   
   scale_x_discrete(labels = c("Ambient", "Increased\n(+50%)", "Reduced\n(-50%)",
-                              "Reduced\nfreaquency", "Summer\ndrought")) +
+                              "Reduced\nfrequency", "Summer\ndrought")) +
+  scale_fill_manual(values = rain_cols) +
   theme(legend.position = "none",
         panel.border      = element_rect(color = "black"),
         panel.grid.major  = element_blank(), 

@@ -29,3 +29,7 @@ source("R/r1_2_5_analysis_NMDS.R")           # Community composition (NMDS and P
  
 # figures
 source("R/r1_3_1_fig_starplot.R")  # starplot
+
+
+# save
+save.image(file = "Output/Data/all_obj.RData")

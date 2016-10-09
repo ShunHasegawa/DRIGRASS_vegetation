@@ -1,0 +1,22 @@
+---
+title: "README"
+author: "Shun Hasegawa"
+date: "10/9/2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+* above_biomass_2013_oct.csv
+    + what is the first column?
+* above_biomass_2014_oct.csv
+    + what is type?
+* above_biomass_2014_apr.csv
+    + In the folder (biomass April 14) there are multiple biomass data including October and April data. I’m not sure which one to be used.
+* above_biomass_2014_oct.csv
+    + what is “unsorted”?
+* above_biomass_2015_oct.csv
+    + no live/dead information
+* what is “September 2015 harvest biomass data.xlsx”?

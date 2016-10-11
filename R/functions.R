@@ -1,8 +1,8 @@
 add.factors <- function(x){
   treatment<-x$plot
   treatment<-recode(treatment, "c(2,10,12,18,24,27,36,39,44,46,53,55)='Ambient'")
-  treatment<-recode(treatment, "c(1,8,13,16,26,29,31,33,47,50,52,54)='Pulsed drought'")
-  treatment<-recode(treatment, "c(6,7,15,20,21,23,34,38,42,49,51,58)='Ambient(no shelter)'")
+  treatment<-recode(treatment, "c(1,8,13,16,26,29,31,33,47,50,52,54)='Pulsed.drought'")
+  treatment<-recode(treatment, "c(6,7,15,20,21,23,34,38,42,49,51,58)='No.shelter'")
   treatment<-recode(treatment, "c(3,17,22,40,45,59)='Seasonal'")
   treatment<-recode(treatment, "c(4,5,11,19,28,30,35,37,41,43,56,60)='Drought'")
   treatment<-recode(treatment, "c(9,14,25,32,48,57)='Increased'")
@@ -11,7 +11,7 @@ add.factors <- function(x){
   
   herb <- x$plot
   herb<-recode(herb, "c(4,6,8,10,12,13,19,20,23,26,27,28,31,35,36,38,41,42,44,50,51,54,55,60)='Added'")
-  herb<- recode(herb, "c(1,11,14,15,16,17,18,2,21,22,24,25,29,3,30,32,33,34,37,39,40,43,45,46,47,48,49,5,52,53,56,57,58,59,7,9)='Ambient'")
+  herb<- recode(herb, "c(1,11,14,15,16,17,18,2,21,22,24,25,29,3,30,32,33,34,37,39,40,43,45,46,47,48,49,5,52,53,56,57,58,59,7,9)='Control'")
   x$herb<-herb
   
   side <- x$plot
@@ -21,7 +21,7 @@ add.factors <- function(x){
   x$treatment <- factor(x$treatment)
   x$side <- factor(x$side)
   x$herb <- factor(x$herb)
-  x$treatment <- factor(x$treatment, levels = c("Ambient", "Ambient(no shelter)" ,"Increased","Drought","Pulsed drought", "Seasonal"))
+  # x$treatment <- factor(x$treatment, levels = c("Ambient", "Ambient(no shelter)" ,"Increased","Drought","Pulsed drought", "Seasonal"))
   x
 }
 
@@ -88,3 +88,17 @@ ggsavePP <- function(filename, plot, width, height){
 
 
 save_png600 <- function(...) png(..., res = 600, units = "in")
+
+
+
+
+combine_cols <- function(.data, KeepCol, CombineCol){
+  # This function combine (sum) multiple coolumns to a single column
+  # KeepCol: column name to be kept
+  # CombineCol: column names to be combined
+  
+  .data[KeepCol] <- rowSums(.data[CombineCol], na.rm = TRUE)  # sum of columns to be combined
+  RemoveCol      <- CombineCol[CombineCol != KeepCol]         # remove columns after combining
+  .data          <- .data[!names(.data) %in% RemoveCol]
+  return(.data)
+}

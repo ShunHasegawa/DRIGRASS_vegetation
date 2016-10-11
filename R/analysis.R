@@ -4,12 +4,11 @@ source("R/functions.R")
 
 # process data
 source("R/r1_process_data.R")
-summary(biom_summ2016)  # df for original data (species names were corrected)
-summary(spp_2016)       # species names in 2016
-summary(tld_biom_2016)  # df for total/live/dead biomass
-summary(sp_biom_2016)   # df for each spp
-summary(div_2016)       # df for diversity indices
-summary(pfg_2016)       # df for plant functional groups (PFG)
+summary(spp_names)    # species names in 2016
+summary(ab_tot_biom)  # df for total/live/dead biomass
+summary(ab_spp_biom)  # df for each spp
+summary(div_2016)     # df for diversity indices
+# summary(pfg_2016)       # df for plant functional groups (PFG)
 
 
 # summary table

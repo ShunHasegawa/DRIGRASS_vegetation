@@ -18,7 +18,8 @@ ab_oct2013 <- read.csv("Data/harvest/above_biomass_2013_oct.csv") %>%    # read 
 
 # October 2014
 ab_oct2014 <- read.csv("Data/harvest/above_biomass_2014_oct.csv") %>% 
-  select(-type) %>% 
+  select(-type) %>%
+  filter(spp != "vortis") %>%                                            # not sure what it is....
   spread(key = spp, value = mass) %>% 
   mutate(year = 2014, month = 10)
 
@@ -90,6 +91,9 @@ ab_biom <- combine_cols(ab_biom, KeepCol = "Bothriochloa.macra", CombineCol = bm
 # Bidens.pilosa
 bp <- ab_biom_cols[grepl("Bidens", ab_biom_cols)]
 ab_biom <- combine_cols(ab_biom, KeepCol = "Bidens.pilosa", CombineCol = bp)
+
+# Chicorium.intybus -> Cicorium.intybus
+ab_biom <- rename(ab_biom, Cicorium.intybus = Chicorium.intybus)
 
 # Commelina.cyanea
 cc <- ab_biom_cols[grepl("Com*elina", ab_biom_cols)]
@@ -200,10 +204,16 @@ unk <- ab_biom_cols[grepl("unk|uns|Fennel-like|other", ab_biom_cols, ignore.case
 ab_biom <- combine_cols(ab_biom, KeepCol  = "unknown", CombineCol = unk)
 
 
+# arrange dataframe
+ab_biom <- ab_biom %>% 
+  select(plot, year, month, treatment, herb, side, everything()) %>% 
+  arrange(year, month, treatment)
+head(ab_biom)
+
+
 
 
 # > prepare df for further analysis -----------------------------------------
-
 
 
 # . sp biomass ------------------------------------------------------------
@@ -246,8 +256,6 @@ div_2016 <- ab_biom %>%
             J = H/log(S))                        # evenness
 
 
-  
-
 
 
 # . PFG ratios ------------------------------------------------------------
@@ -255,11 +263,12 @@ div_2016 <- ab_biom %>%
 # df for PFG
 sp_pfg <- read.csv("Data/spp_PFG_2016.csv")
 
-pfg_2016 <- sp_biom_2016 %>% 
-  gather(spp, value, -Date, -plot, -treatment, -herb) %>%  # reshape: gather sp coumns to rows
-  left_join(sp_pfg) %>%                                    # merge with PFG df
-  group_by(Date, plot, treatment, herb) %>%                # get total biomass and c3 ratios for each plot
+
+pfg_2016 <- ab_spp_biom %>% 
+  gather(spp, value, -plot, -year, -month, -treatment, -herb, -side) %>%  # reshape: gather sp coumns to rows
+  left_join(sp_pfg, by = "spp") %>%                                       # merge with PFG df
+  group_by(plot, year, month, treatment, herb, side) %>%                  # get total biomass and c3 ratios for each plot
   summarise(total   = sum(value),
             c3ratio = sum(value[pfg == "c3"]) / total,
             c4grass = sum(value[pfg == "c4"])) %>% 
-  ungroup()                                                # remove grouping factors
+  ungroup()                                                               # remove grouping factors

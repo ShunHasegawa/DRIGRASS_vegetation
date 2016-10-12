@@ -49,21 +49,23 @@ grid.draw(ab_biom_plot_merged)
 
 
 #### Summer
-```{r biom_tbl_summer, echo=FALSE, results='asis'}
+```{r biom_tbl_summer, echo=FALSE, results='asis', fig.width=6, fig.height=6, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
 lmer_anova_tbl(total_rh_s_m1, 
            caption = "Total biomass in summer for rainfall and herbivore treatments")
 
 lmer_anova_tbl(total_s_m1, 
            caption = "Total biomass in summer for rainfall treatments")
+plot(lsmeans::lsmeans(total_s_m1, by = "year", specs = "treatment"), comparisons = TRUE)
 ```
 
 #### Winter
-```{r biom_tbl_winter, echo=FALSE, results='asis'}
+```{r biom_tbl_winter, echo=FALSE, results='asis', fig.width=3, fig.height=2.5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
 lmer_anova_tbl(total_rh_w_m1, 
            caption = "Total biomass in winter for rainfall and herbivore treatments")
 
 lmer_anova_tbl(total_w_m1, 
            caption = "Total biomass in winter for rainfall treatments")
+plot(lsmeans::lsmeans(total_w_m1, "year"), comparisons = TRUE)
 ```
 
 
@@ -80,18 +82,28 @@ grid.draw(div_plot_merged)
 
 
 #### Summer
-```{r h_s_tbl, echo=FALSE, results='asis'}
+```{r h_s_tbl_rxh, echo=FALSE, results='asis', fig.width=3, fig.height=2.5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
 lmer_anova_tbl(h_by_rh_s_m1, caption = "Shannon-weaver index in summer for rainfall and herbivore treatments")
+plot(lsmeans::lsmeans(h_by_rh_s_m1, "herb"), comparisons = TRUE)
+```
+
+```{r h_s_tbl_rain, echo=FALSE, results='asis', fig.width=3, fig.height=2.5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
 
 lmer_anova_tbl(h_s_m1, caption = "Shannon-weaver index in summer for rainfall")
+plot(lsmeans::lsmeans(h_s_m1, "treatment"), comparisons = TRUE)
+plot(lsmeans::lsmeans(h_s_m1, "year"), comparisons = TRUE)
 ```
 
 
+
+
 #### Winter
-```{r h_w_tbl, echo=FALSE, results='asis'}
+```{r h_w_tbl, echo=FALSE, results='asis', fig.width=3, fig.height=2.5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
 lmer_anova_tbl(h_by_rh_w_m1, caption = "Shannon-weaver index in winter for rainfall and herbivore treatments")
 
 lmer_anova_tbl(h_w_m1, caption = "Shannon-weaver index in winter for rainfall")
+plot(lsmeans::lsmeans(h_w_m1, "treatment"), comparisons = TRUE)
+
 ```
 
 
@@ -120,18 +132,21 @@ lmer_anova_tbl(j_w_m1, caption = "Species evennes in winter for rainfall")
 
 
 #### Summer
-```{r s_s_tbl, echo=FALSE, results='asis'}
+```{r s_s_tbl, echo=FALSE, results='asis', fig.width=3, fig.height=2.5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
 lmer_anova_tbl(s_by_rh_s_m1, caption = "Species richness in summer for rainfall and herbivore treatments")
 
 lmer_anova_tbl(s_s_m1, caption = "Species richness in summer for rainfall")
+plot(lsmeans::lsmeans(s_s_m1, "treatment"), comparisons = TRUE)
+plot(lsmeans::lsmeans(s_s_m1, "year"), comparisons = TRUE)
 ```
 
 
 #### Winter
-```{r s_w_tbl, echo=FALSE, results='asis'}
+```{r s_w_tbl, echo=FALSE, results='asis', fig.width=3, fig.height=2.5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
 lmer_anova_tbl(s_by_rh_w_m1, caption = "Species richness in winter for rainfall and herbivore treatments")
 
 lmer_anova_tbl(s_w_m1, caption = "Species richness in winter for rainfall")
+plot(lsmeans::lsmeans(s_w_m1, "treatment"), comparisons = TRUE)
 ```
 
 
@@ -182,4 +197,5 @@ lmer_anova_tbl(s_w_m1, caption = "Species richness in winter for rainfall")
 <!-- pander(perm_rxh$aov.tab, justify = "right", caption = "permANOVA for rainfall x herb interaction") -->
 <!-- pander(perm_rain$aov.tab, justify = "right", caption = "permANOVA for rainfall treatment") -->
 <!-- ``` -->
+
 

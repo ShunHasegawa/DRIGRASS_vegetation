@@ -102,3 +102,28 @@ combine_cols <- function(.data, KeepCol, CombineCol){
   .data          <- .data[!names(.data) %in% RemoveCol]
   return(.data)
 }
+
+
+
+# set graphic parameters --------------------------------------------------
+
+
+theme_set(theme_bw() + 
+            theme(panel.grid.major = element_blank(), 
+                  panel.grid.minor = element_blank()))
+
+# define graphic background
+science_theme <- theme(panel.border      = element_rect(color = "black"),
+                       panel.grid.major  = element_blank(), 
+                       panel.grid.minor  = element_blank(), 
+                       legend.position   = c(.91, .91),
+                       legend.title      = element_blank(),
+                       legend.background = element_blank(),
+                       legend.key        = element_blank(),
+                       legend.key.width  = unit(2.5, "lines"),
+                       legend.key.height = unit(.8, "lines"),
+                       axis.ticks.length = unit(-.2, "lines"),
+                       axis.text.x       = element_text(margin = margin(5)),
+                       axis.text.y       = element_text(margin = margin(0, 5)),
+                       axis.title.y      = element_text(margin = margin(0, 10)))
+

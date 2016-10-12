@@ -27,8 +27,9 @@ ab_oct2014 <- read.csv("Data/harvest/above_biomass_2014_oct.csv") %>%
 # October 2015. It doen's have sp biomass data
 ab_oct2015 <- read.csv("Data/harvest/above_biomass_2015_oct.csv") %>% 
   rename(total = mass) %>% 
-  mutate(year = 2015, month = 10) %>% 
-  left_join(treat_dd, by = "plot")
+  mutate(year = "2015", month = "10", season = "winter") %>% 
+  left_join(treat_dd, by = "plot") %>% 
+  select(-side)
 
 
 # April 2014
@@ -206,7 +207,10 @@ ab_biom <- combine_cols(ab_biom, KeepCol  = "unknown", CombineCol = unk)
 
 # arrange dataframe
 ab_biom <- ab_biom %>% 
-  select(plot, year, month, treatment, herb, side, everything()) %>% 
+  mutate(season = ifelse(month == 4, "summer", "winter"),
+         month  = as.character(month),
+         year   = as.character(year)) %>% 
+  select(plot, year, month, season, treatment, herb, everything(), -side) %>% 
   arrange(year, month, treatment)
 head(ab_biom)
 
@@ -224,9 +228,11 @@ ab_spp_biom <- select(ab_biom, -dead, -unknown)
 
 # species names
 spp_names <- ab_spp_biom %>% 
-  select(-plot, -year, -month, -treatment, -herb, -side) %>%  # remove unnecessary columns
-  names() %>%                                                 # get column names (i.e. sp names)
-  sort()                                                      # order alphabetically
+  select(-plot, -year, -month, -season, -treatment, -herb) %>%  # remove unnecessary columns
+  names() %>%                                                   # get column names (i.e. sp names)
+  sort()                                                        # order alphabetically
+
+
 
 
 # . biomass: total/live/dead ----------------------------------------------
@@ -234,15 +240,12 @@ spp_names <- ab_spp_biom %>%
 
 # get biomass (total/live/dead)
 ab_tot_biom <-  ab_biom %>% 
-  transmute(plot, year, month, treatment, herb, dead,           # keep those columns
-            live  = rowSums(.[, c(spp_names, "unknown")]),      # compute row sums for species. "." is inherited data frame from right abvoe (i.e. ab_biom)
-            total = live + dead) %>%                            # total biomass
-  bind_rows(ab_oct2015) %>%                                     # combine with total biomass in October 2015
-  select(-side) %>% 
-  mutate(date   = as.Date(paste(year, month, "15", sep = "-")),
-         time   = factor(date, labels = 1:length(unique(date))),
-         season = paste(year, month.abb[month], sep = "-"))
+  transmute(plot, year, month, season, treatment, herb, dead,  # keep those columns
+            live  = rowSums(.[, c(spp_names, "unknown")]),     # compute row sums for species. "." is inherited data frame from right abvoe (i.e. ab_biom)
+            total = live + dead) %>%                           # total biomass
+  bind_rows(ab_oct2015)                                        # combine with total biomass in October 2015
 some(ab_tot_biom)
+
 
 
 
@@ -250,10 +253,10 @@ some(ab_tot_biom)
 
 
 div_2016 <- ab_biom %>%
-  transmute(year, month, plot, treatment, herb,
-            H = diversity(.[spp_names]),         # shannon's index
-            S = specnumber(.[spp_names]),        # number of spp
-            J = H/log(S))                        # evenness
+  transmute(year, month, season, plot, treatment, herb,
+            H = diversity(.[spp_names]),                 # shannon's index
+            S = specnumber(.[spp_names]),                # number of spp
+            J = H/log(S))                                # evenness
 
 
 
@@ -265,10 +268,10 @@ sp_pfg <- read.csv("Data/spp_PFG_2016.csv")
 
 
 pfg_2016 <- ab_spp_biom %>% 
-  gather(spp, value, -plot, -year, -month, -treatment, -herb, -side) %>%  # reshape: gather sp coumns to rows
-  left_join(sp_pfg, by = "spp") %>%                                       # merge with PFG df
-  group_by(plot, year, month, treatment, herb, side) %>%                  # get total biomass and c3 ratios for each plot
-  summarise(total   = sum(value),
-            c3ratio = sum(value[pfg == "c3"]) / total,
-            c4grass = sum(value[pfg == "c4"])) %>% 
-  ungroup()                                                               # remove grouping factors
+  gather(spp, value, -plot, -year, -month, -season, -treatment, -herb) %>%   # reshape: gather sp coumns to rows
+  left_join(sp_pfg, by = "spp") %>%                                          # merge with PFG df
+  group_by(plot, year, month, season, treatment, herb) %>%                   # summarise for each plot
+  summarise(total   = sum(value),                                            # get total biomass
+            c3ratio = sum(value[pfg == "c3"]) / total,                       # get c3 ratio
+            c4grass = sum(value[pfg == "c4"])) %>%                           # get total c4 biomass
+  ungroup()                                                                  # remove grouping factors

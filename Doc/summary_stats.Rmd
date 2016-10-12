@@ -1,0 +1,185 @@
+---
+title: "DRIGRASS -Summary stats -"
+author: "Shun Hasegawa"
+date: "12 October 2016"
+output:
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+library(car)
+library(lmerTest)
+library(ggplot2)
+library(grid)
+library(pander)
+library(plyr)
+library(vegan)
+knitr::opts_chunk$set(echo = TRUE)
+load("../Output/Data/all_obj.RData")
+theme_set(theme_bw()) 
+
+
+# function to generate anova table from lmer
+lmer_anova_tbl <- function(lmermod, ...){
+  a <- Anova(lmermod, test.statistic = "F")
+  panderOptions('round', c(2, 0, 0, 3))
+  if(any(a[, 4] <= 0.05)) emphasize.strong.cells(cbind(which(a[, 4] <= 0.05), 4))
+  emphasize.italics.cols(4)
+  pander(a,  justify = "right", ...)
+}
+
+```
+
+
+
+## Introduction
+Here, I show the summary results of statistical analysis for the DRIGRASS experiment. Repeated-measures ANOVA was performed separately for summer (Apr) and winter (Oct) data. In order to take initial heterogeneity into account, I used October 2013 data (the first harvest) as a covariate. The covariate in summary tables below is shown as "reponse variable0", for example, S0 for for species richness (S). Firstly, interaction effects between rainfall and herbivore were assessed using a subset of the data with the rainfall treatments of Pulsed.drought, Ambient and Drought. Where there was a significant Herbivore effect (indicated as either main or interaction effect), I removed added-herbivore plots from the dataset and performed repeated-measures ANOVA for rainfall treatments (_n_ = 6). Where there was no Herbivore effect, the full dataset was analysed for rainfall treatment (_n_ = 6 or 12).
+
+
+
+
+## Biomass (Total/Live/Dead)
+
+```{r biom_fig, echo=FALSE, fig.height=6.5, fig.width=6.5, results='hide'}
+grid.draw(ab_biom_plot_merged)
+```
+
+### Total biomass
+
+
+#### Summer
+```{r biom_tbl_summer, echo=FALSE, results='asis'}
+lmer_anova_tbl(total_rh_s_m1, 
+           caption = "Total biomass in summer for rainfall and herbivore treatments")
+
+lmer_anova_tbl(total_s_m1, 
+           caption = "Total biomass in summer for rainfall treatments")
+```
+
+#### Winter
+```{r biom_tbl_winter, echo=FALSE, results='asis'}
+lmer_anova_tbl(total_rh_w_m1, 
+           caption = "Total biomass in winter for rainfall and herbivore treatments")
+
+lmer_anova_tbl(total_w_m1, 
+           caption = "Total biomass in winter for rainfall treatments")
+```
+
+
+
+
+## Diversity indices
+
+```{r div_fig, echo=FALSE, fig.height=6.5, fig.width=6.5, results='hide'}
+grid.draw(div_plot_merged)
+```
+
+
+### Shannon-weaver index (_H'_)
+
+
+#### Summer
+```{r h_s_tbl, echo=FALSE, results='asis'}
+lmer_anova_tbl(h_by_rh_s_m1, caption = "Shannon-weaver index in summer for rainfall and herbivore treatments")
+
+lmer_anova_tbl(h_s_m1, caption = "Shannon-weaver index in summer for rainfall")
+```
+
+
+#### Winter
+```{r h_w_tbl, echo=FALSE, results='asis'}
+lmer_anova_tbl(h_by_rh_w_m1, caption = "Shannon-weaver index in winter for rainfall and herbivore treatments")
+
+lmer_anova_tbl(h_w_m1, caption = "Shannon-weaver index in winter for rainfall")
+```
+
+
+
+
+### Evenness (_J'_)
+
+#### Summer
+```{r j_s_tbl, echo=FALSE, results='asis'}
+lmer_anova_tbl(j_by_rh_s_m1, caption = "Species evennes in summer for rainfall and herbivore treatments")
+
+lmer_anova_tbl(j_s_m1, caption = "Species evennes in summer for rainfall")
+```
+
+
+#### Winter
+```{r j_w_tbl, echo=FALSE, results='asis'}
+lmer_anova_tbl(j_by_rh_w_m1, caption = "Species evennes in winter for rainfall and herbivore treatments")
+
+lmer_anova_tbl(j_w_m1, caption = "Species evennes in winter for rainfall")
+```
+
+
+
+### Species richness
+
+
+#### Summer
+```{r s_s_tbl, echo=FALSE, results='asis'}
+lmer_anova_tbl(s_by_rh_s_m1, caption = "Species richness in summer for rainfall and herbivore treatments")
+
+lmer_anova_tbl(s_s_m1, caption = "Species richness in summer for rainfall")
+```
+
+
+#### Winter
+```{r s_w_tbl, echo=FALSE, results='asis'}
+lmer_anova_tbl(s_by_rh_w_m1, caption = "Species richness in winter for rainfall and herbivore treatments")
+
+lmer_anova_tbl(s_w_m1, caption = "Species richness in winter for rainfall")
+```
+
+
+
+
+<!-- ## C$_3$ ratios -->
+
+<!-- ```{r c3_fig, echo=FALSE, fig.height=4, fig.width=4, results='hide'} -->
+<!-- fig_c3r -->
+<!-- ``` -->
+
+
+<!-- ```{r c3_tbl, echo=FALSE, results='asis'} -->
+<!-- pander(anova(h_m1), justify = "right", caption = "C3 ratios") -->
+<!-- ``` -->
+
+
+
+
+<!-- ## Dominent species (>5% of total biomass) -->
+
+<!-- ```{r dom_spp_fig, echo=FALSE, fig.height=7, fig.width=7, results='hide'} -->
+<!-- sp_plot -->
+<!-- ``` -->
+
+<!-- ```{r dom_spp_tbl, echo=FALSE, results='asis'} -->
+<!-- l <- llply(names(m_rain_list), function(x) pander(anova(m_rain_list[[x]]), justify = "right", caption = x)) -->
+<!-- l[[1]] -->
+<!-- l[[2]] -->
+<!-- l[[3]] -->
+<!-- l[[4]] -->
+<!-- ``` -->
+
+<!-- ```{r starplot, echo=FALSE, fig.width=8, fig.height=6, results='hide'} -->
+<!-- plot_starplot() -->
+<!-- ``` -->
+
+
+
+<!-- ## NMDS and permANOVA -->
+
+<!-- ```{r nmds_fig, echo=FALSE, fig.height=6, fig.width=7, results='hide'} -->
+<!-- plot_nmds_2016() -->
+<!-- ``` -->
+
+
+<!-- ```{r perm, echo=FALSE, results='asis'} -->
+<!-- pander(perm_rxh$aov.tab, justify = "right", caption = "permANOVA for rainfall x herb interaction") -->
+<!-- pander(perm_rain$aov.tab, justify = "right", caption = "permANOVA for rainfall treatment") -->
+<!-- ``` -->
+

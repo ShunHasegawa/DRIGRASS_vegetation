@@ -18,11 +18,9 @@ ab_oct2013 <- read.csv("Data/harvest/above_biomass_2013_oct.csv") %>%    # read 
 
 # October 2014
 ab_oct2014 <- read.csv("Data/harvest/above_biomass_2014_oct.csv") %>% 
-  select(-type) %>%
-  filter(spp != "vortis") %>%                                            # not sure what it is....
-  spread(key = spp, value = mass) %>% 
-  mutate(year = 2014, month = 10)
-
+  select(-X) %>% 
+  mutate(year = 2014, month = 10)        
+names(ab_oct2014) <- gsub("scaled[.]", "", names(ab_oct2014))
 
 # October 2015. It doen's have sp biomass data
 ab_oct2015 <- read.csv("Data/harvest/above_biomass_2015_oct.csv") %>% 
@@ -34,8 +32,7 @@ ab_oct2015 <- read.csv("Data/harvest/above_biomass_2015_oct.csv") %>%
 
 # April 2014
 ab_apr2014 <- read.csv("Data/harvest/above_biomass_2014_apr.csv") %>% 
-  select(-live, -proportion, -scaled, -X, -treatment) %>% 
-  spread(key = spp, value = mass) %>% 
+  select(-X, -treatment, -herb, -side) %>% 
   mutate(year = 2014, month = 4)
 
 

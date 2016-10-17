@@ -4,7 +4,7 @@
 treat_dd <- read.csv("Data/treatment_code.csv")  # dataframe for treatment
 
 
-# > above-ground biomass ----------------------------------------------------
+# > clean up raw data ----------------------------------------------------
 
 
 # . read data and arrange -------------------------------------------------
@@ -22,12 +22,12 @@ ab_oct2014 <- read.csv("Data/harvest/above_biomass_2014_oct.csv") %>%
   mutate(year = 2014, month = 10)        
 names(ab_oct2014) <- gsub("scaled[.]", "", names(ab_oct2014))
 
-# October 2015. It doen's have sp biomass data
-ab_oct2015 <- read.csv("Data/harvest/above_biomass_2015_oct.csv") %>% 
-  rename(total = mass) %>% 
-  mutate(year = "2015", month = "10", season = "winter") %>% 
-  left_join(treat_dd, by = "plot") %>% 
-  select(-side)
+# # October 2015. It doen's have sp biomass data
+# ab_oct2015 <- read.csv("Data/harvest/above_biomass_2015_oct.csv") %>% 
+#   rename(total = mass) %>% 
+#   mutate(year = "2015", month = "10", season = "winter") %>% 
+#   left_join(treat_dd, by = "plot") %>% 
+#   select(-side)
 
 
 # April 2014
@@ -50,7 +50,6 @@ ab_apr2016 <- readWorksheetFromFile("Data/harvest/above_biomass_2016_mar.xlsx",
 
 
 # merge the above dataframes
-
 ab_list <- list(ab_oct2013, ab_oct2014, ab_apr2014, ab_apr2015, ab_apr2016)  # list of all data except for ab_oct2015 which doesn't have sp biomass  
 
 ab_list <- llply(ab_list, function(x){                                       # fix species names
@@ -65,7 +64,6 @@ ab_biom <- rbind.fill(ab_list) %>%                                           # b
   left_join(treat_dd, by = "plot")                                           # combine with treatment coordinates
 
 ab_biom[is.na(ab_biom)] <- 0                                                 # turn NA into 0
-
 
 
 
@@ -113,16 +111,15 @@ ab_biom <- combine_cols(ab_biom, KeepCol = "Cynodon.dactlyon", CombineCol = cd)
 cs <- ab_biom_cols[grepl("Cyperus", ab_biom_cols)]
 ab_biom <- combine_cols(ab_biom, KeepCol = "Cyperus.sesquiflorus", CombineCol = cs)
 
-# dead
-dead <- ab_biom_cols[grepl("Dead", ab_biom_cols)]
-ab_biom <- combine_cols(ab_biom, KeepCol = "dead", CombineCol = dead)
-
 # Dichelachne.sp
 ds <- ab_biom_cols[grepl("Dichelachne", ab_biom_cols)]
 ab_biom <- combine_cols(ab_biom, KeepCol = "Dichelachne.sp", CombineCol = ds)
 
-# Digitaria.sp
+# Digitaria.sp; ther were only identified in April 2014 as Digitaria.didactyla 
+# and Digitaria.sanguinalis. But only identified as Digitaria.sp otherwise. so
+# just combine them all
 ds2 <- ab_biom_cols[grepl("Digitaria", ab_biom_cols)]
+colSums(ab_biom[ds2])
 ab_biom <- combine_cols(ab_biom, KeepCol = "Digitaria.sp", CombineCol = ds2)
 
 # Eragrostis.curvula
@@ -157,9 +154,9 @@ ab_biom <- combine_cols(ab_biom, KeepCol = "Ornithopus.compressus", CombineCol =
 oc2 <- ab_biom_cols[grepl("Oxalis", ab_biom_cols)]
 ab_biom <- combine_cols(ab_biom, KeepCol = "Oxalis.corniculata", CombineCol = oc2)
 
-# Paspalidum.sp
-ps <- ab_biom_cols[grepl("Paspalidum", ab_biom_cols)]
-ab_biom <- combine_cols(ab_biom, KeepCol = "Paspalidum.sp", CombineCol = ps)
+# Paspalidium.flavidum
+ps <- ab_biom_cols[grepl("Paspali", ab_biom_cols)]
+ab_biom <- combine_cols(ab_biom, KeepCol = "Paspalidium.flavidum", CombineCol = ps)
 
 # Paspalum.dilitatum
 pd <- ab_biom_cols[grepl("Paspalum", ab_biom_cols)]
@@ -198,13 +195,12 @@ ws <- ab_biom_cols[grepl("W.*lenbergia", ab_biom_cols)]
 ab_biom <- combine_cols(ab_biom, KeepCol  = "Whalenbergia.sp", CombineCol = ws)
 
 # unknown
-unk <- ab_biom_cols[grepl("unk|uns|Fennel-like|other", ab_biom_cols, ignore.case = TRUE)]
+unk <- ab_biom_cols[grepl("unk|uns|Fennel.like|other", ab_biom_cols, ignore.case = TRUE)]
 ab_biom <- combine_cols(ab_biom, KeepCol  = "unknown", CombineCol = unk)
-
 
 # arrange dataframe
 ab_biom <- ab_biom %>% 
-  mutate(season = ifelse(month == 4, "summer", "winter"),
+  mutate(season = ifelse(month == 4, "Summer", "Winter"),
          month  = as.character(month),
          year   = as.character(year)) %>% 
   select(plot, year, month, season, treatment, herb, everything(), -side) %>% 
@@ -214,41 +210,40 @@ head(ab_biom)
 
 
 
+# . save cleaned raw data --------------------------------------------------------
+
+ab_biom_list <- split(ab_biom, f = paste0(month.abb[as.numeric(ab_biom$month)],   # split df for each harvest. month.abb changes month (4 or 10) to abbreviation (Apr or Oct)
+                                          ab_biom$year))
+l_ply(names(ab_biom_list), function(x){                                           # loop the following functions for each name of objects in the list
+  d <- arrange(ab_biom_list[[x]], plot)                                           # sort the object by plot
+  f <- paste0("Output/Data/formatted/formatted_", x, "_harvest_SHUN.csv")         # create file name used to save the object
+  write.csv(x = d, file = f, row.names = FALSE)                                   # save the object
+})
+
+
+
+
 # > prepare df for further analysis -----------------------------------------
 
 
-# . sp biomass ------------------------------------------------------------
-
-
-ab_spp_biom <- select(ab_biom, -dead, -unknown)
-
-
-# species names
-spp_names <- ab_spp_biom %>% 
+# sp biomass
+ab_spp_biom <- select(ab_biom, -Dead, -unknown)                                  
+spp_names <- ab_spp_biom %>%                                    # species names
   select(-plot, -year, -month, -season, -treatment, -herb) %>%  # remove unnecessary columns
   names() %>%                                                   # get column names (i.e. sp names)
   sort()                                                        # order alphabetically
 
 
-
-
-# . biomass: total/live/dead ----------------------------------------------
-
-
 # get biomass (total/live/dead)
-ab_tot_biom <-  ab_biom %>% 
-  transmute(plot, year, month, season, treatment, herb, dead,  # keep those columns
+ab_tot_biom <-  ab_biom %>%                                    
+  transmute(plot, year, month, season, treatment, herb, Dead,  # keep those columns
             live  = rowSums(.[, c(spp_names, "unknown")]),     # compute row sums for species. "." is inherited data frame from right abvoe (i.e. ab_biom)
-            total = live + dead) %>%                           # total biomass
-  bind_rows(ab_oct2015)                                        # combine with total biomass in October 2015
+            total = live + Dead)                               # total biomass
+# %>% bind_rows(ab_oct2015)                                        # combine with total biomass in October 2015
 some(ab_tot_biom)
 
 
-
-
-# . diversity indices -----------------------------------------------------
-
-
+# diversity indices
 div_2016 <- ab_biom %>%
   transmute(year, month, season, plot, treatment, herb,
             H = diversity(.[spp_names]),                 # shannon's index
@@ -256,14 +251,8 @@ div_2016 <- ab_biom %>%
             J = H/log(S))                                # evenness
 
 
-
-
-# . PFG ratios ------------------------------------------------------------
-
-# df for PFG
-sp_pfg <- read.csv("Data/spp_PFG_2016.csv")
-
-
+# PFG ratios
+sp_pfg <- read.csv("Data/spp_PFG_2016.csv")                                  # df for a list of PFG
 pfg_2016 <- ab_spp_biom %>% 
   gather(spp, value, -plot, -year, -month, -season, -treatment, -herb) %>%   # reshape: gather sp coumns to rows
   left_join(sp_pfg, by = "spp") %>%                                          # merge with PFG df

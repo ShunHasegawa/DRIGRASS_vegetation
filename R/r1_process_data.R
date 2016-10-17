@@ -22,12 +22,12 @@ ab_oct2014 <- read.csv("Data/harvest/above_biomass_2014_oct.csv") %>%
   mutate(year = 2014, month = 10)        
 names(ab_oct2014) <- gsub("scaled[.]", "", names(ab_oct2014))
 
-# # October 2015. It doen's have sp biomass data
-# ab_oct2015 <- read.csv("Data/harvest/above_biomass_2015_oct.csv") %>% 
-#   rename(total = mass) %>% 
-#   mutate(year = "2015", month = "10", season = "winter") %>% 
-#   left_join(treat_dd, by = "plot") %>% 
-#   select(-side)
+# October 2015. It doen's have sp biomass data
+ab_oct2015 <- read.csv("Data/harvest/above_biomass_2015_oct.csv") %>%
+  rename(total = mass) %>%
+  mutate(year = "2015", month = "10", season = "Winter") %>%
+  left_join(treat_dd, by = "plot") %>%
+  select(-side)
 
 
 # April 2014
@@ -238,8 +238,8 @@ spp_names <- ab_spp_biom %>%                                    # species names
 ab_tot_biom <-  ab_biom %>%                                    
   transmute(plot, year, month, season, treatment, herb, Dead,  # keep those columns
             live  = rowSums(.[, c(spp_names, "unknown")]),     # compute row sums for species. "." is inherited data frame from right abvoe (i.e. ab_biom)
-            total = live + Dead)                               # total biomass
-# %>% bind_rows(ab_oct2015)                                        # combine with total biomass in October 2015
+            total = live + Dead)  %>%                          # total biomass
+  bind_rows(ab_oct2015)                                        # combine with total biomass in October 2015
 some(ab_tot_biom)
 
 

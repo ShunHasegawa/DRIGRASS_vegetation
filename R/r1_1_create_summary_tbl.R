@@ -88,11 +88,15 @@ names(summar_tbl_list) <- names(all_list)
 
 
 # save as excel
-l_ply(names(summar_tbl_list), function(x){
-  filename  <- paste0("Output/Tables/summary_", x, ".xlsx")
-  data_list <- summar_tbl_list[[x]]
-  writeWorksheetToFile(file        = filename, 
-                       data        = llply(data_list, as.data.frame),
-                       sheet       = names(data_list), 
-                       clearSheets = TRUE)
+get_summary_excel <- function(){
+  l_ply(names(summar_tbl_list), function(x){
+    filename  <- paste0("Output/Tables/summary_", x, ".xlsx")
+    data_list <- summar_tbl_list[[x]]
+    writeWorksheetToFile(file        = filename, 
+                         data        = llply(data_list, as.data.frame),
+                         sheet       = names(data_list), 
+                         clearSheets = TRUE)
   })
+}
+# If one wants to save the above tables as excel run get_summary_excel(). This
+# takes some time.

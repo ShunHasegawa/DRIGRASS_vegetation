@@ -127,3 +127,26 @@ science_theme <- theme(panel.border      = element_rect(color = "black"),
                        axis.text.y       = element_text(margin = margin(0, 5)),
                        axis.title.y      = element_text(margin = margin(0, 10)))
 
+
+
+# This function returns the persimonious model chosen among mdoels with dAIC <=
+# 2. (dAIC; difference in AICc from the lowest AICc)
+get_persim_lmer <- function(lmermod, show.model.res = FALSE){
+  options(na.action = "na.fail")                                      # na.action option has to "na.fail" to run dredge function below
+  m         <- update(lmermod, REML = FALSE)                          # Models have to be estimated by ML instead of REML to be compared with one another by dredge below.
+  all_m     <- dredge(m)                                              # dredge lists models with all combination of fixed terms, includ. interactions, cantined in the passed model. Then it computes AICc and dAICc.
+  cat("Models with dAICc < 2...\n\n")                                 # print models with dAIC<2
+  print(subset(all_m, delta <= 2))
+  best_ms   <- get.models(all_m, subset = delta <=2)                  # choose best models (i.e. ones with dAIC < 2)
+  if(show.model.res){                                                 # if show.model.res = TRUE, print the results of anova for the best models. it may takes some time
+    allres <- llply(best_ms, function(x){
+      Anova(update(x, REML = TRUE), test.statistic = "F")             # get Anova result, follwing switing back to REML
+    })
+    cat("\n\nAnova tables with F test for the above models...\n\n")
+    print(allres)
+  }
+  term_n    <- laply(best_ms, function(x) nrow(anova(x)))             # get number of fixed terms in each mdoel
+  fin_m     <- best_ms[[which.min(term_n)]]                           # choose the model with the smallest number of fixed terms
+  fin_m     <- update(fin_m, REML = TRUE)                             # switch the estimate back to REML from ML
+  return(fin_m)
+}

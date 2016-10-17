@@ -1,59 +1,11 @@
 # parepare dataframe for analysis -----------------------------------------
 
-
-# > dataframe to test rainfall --------------------------------------------
-
-
-# remove shelteered
-div_2016_ed   <- filter(div_2016, treatment != "No.shelter")  
-
-# Time0 to be used as a covariate 
-div_0 <- div_2016_ed %>%                                      
-  filter(season == "winter" & year == 2013) %>% 
-  transmute(plot, H0 = H, S0 = S, J0 = J)
-
-
-
-
-# >> summer ---------------------------------------------------------------
-
-
-# complete dataset
-div_2016_ed_s <- div_2016_ed %>%
-  filter(season == "summer") %>%
-  left_join(div_0, by = "plot")
-
-
-# subset of data only with 'Control' herb. This will be used to test only
-# rainfall treatments when herb has a significant effect
-div_2016_ed_s_hcont <- filter(div_2016_ed_s, herb == "Control")
-  
-
-
-
-# >> winter ---------------------------------------------------------------
-
-
-div_2016_ed_w <- div_2016_ed %>% 
-  filter(season == "winter" & year == 2014) %>% 
-  left_join(div_0, by = "plot")
-
-
-
-
-# > dataframe to test rainfall x herb --------------------------------------------
-
-
-# summer
-div_2016_by_rxh_s <- div_2016_ed_s %>%
-  filter(treatment %in% c("Pulsed.drought", "Ambient", "Drought")) %>%  # subset rainfall treatments
-  droplevels(.)                                                         # remove empty levels. "." indicated the dataframe inherited from the above (i.e. filter) 
-
-
-# winter
-div_2016_by_rxh_w <- div_2016_ed_w %>% 
-  filter(treatment %in% c("Pulsed.drought", "Ambient", "Drought")) %>%
-  droplevels(.)
+div_2016_ed         <- filter(div_2016, treatment != "No.shelter")  # remove shelteered  
+div_2016_ed_s       <- filter(div_2016_ed, season == "Summer")      # test Rainfall; summer; complete dataset
+div_2016_ed_w       <- filter(div_2016_ed, season == "Winter")      # test Rainfall; winter; complete dataset
+div_2016_ed_s_hcont <- filter(div_2016_ed_s, herb == "Control")     # test Rainfall; summer; contrl-herb. subset of data only with 'Control' herb. This will be used to test only rainfall treatments when herb has a significant effect
+div_2016_by_rxh_s   <- filter(div_2016_ed_s, treatment %in% c("Pulsed.drought", "Ambient", "Drought"))  # test Rainfall x Herb; summer; subset rainfall treatments
+div_2016_by_rxh_w   <- filter(div_2016_ed_w, treatment %in% c("Pulsed.drought", "Ambient", "Drought"))  # test Rainfall x Herb: winter
 
 
 
@@ -70,13 +22,14 @@ div_2016_by_rxh_w <- div_2016_ed_w %>%
 # . rain x herb -------------------------------------------------------------
 
 create_trans_boxplot(H ~ treatment * herb * year, data = div_2016_by_rxh_s)
-plot(H ~ H0, pch = 19, col = treatment, data = div_2016_by_rxh_s)
-h_by_rh_s_m1 <- lmer(H ~ year * treatment * herb + H0 + (1|plot), data = div_2016_by_rxh_s)
-Anova(h_by_rh_s_m1, test.statistic = "F")
-plot(h_by_rh_s_m1)
-qqnorm(resid(h_by_rh_s_m1))
-qqline(resid(h_by_rh_s_m1))
-# significant main effects, including herb, so herb shouldn't be analysed with rainfall
+h_by_rh_s_m1 <- lmer(H ~ year * treatment * herb + (1|plot), 
+                     data = div_2016_by_rxh_s)
+h_by_rh_s_m_fin <- get_persim_lmer(h_by_rh_s_m1)
+Anova(h_by_rh_s_m_fin, test.statistic = "F")
+plot(h_by_rh_s_m_fin)
+qqnorm(resid(h_by_rh_s_m_fin))
+qqline(resid(h_by_rh_s_m_fin))
+  # small indication of herb effects. aruguable. 
 
 
 
@@ -84,14 +37,14 @@ qqline(resid(h_by_rh_s_m1))
 # . rainfall -------------------------------------------------------------------
 
 
-# the above analysis showed a herb effect so use the sutbset dataframe without
-# added-herb
-create_trans_boxplot(H ~ treatment * year, data = div_2016_ed_s_hcont)
-plot(H ~ H0, pch = 19, col = treatment, data = div_2016_ed_s_hcont)
-h_s_m1 <- lmer(H ~ treatment * year + H0 + (1|plot), data = div_2016_ed_s_hcont)
-Anova(h_s_m1, test.statistic = "F")
-plot(h_s_m1)
-qqnorm(resid(h_s_m1))
+# the above analysis showed no significnat herb effect so use the complete
+# dataset
+create_trans_boxplot(H ~ treatment * year, data = div_2016_ed_s)
+h_s_m1 <- lmer(H ~ treatment * year + (1|plot), data = div_2016_ed_s)
+h_s_m_fin <- get_persim_lmer(h_s_m1)
+Anova(h_s_m_fin, test.statistic = "F")
+plot(h_s_m_fin)
+qqnorm(resid(h_s_m_fin))
 qqline(resid(h_s_m1))
 
 
@@ -103,12 +56,14 @@ qqline(resid(h_s_m1))
 # . rain x herb -----------------------------------------------------------
 
 
-create_trans_boxplot(H ~ treatment * herb, data = div_2016_by_rxh_w)
-plot(H ~ H0, data = div_2016_by_rxh_w, pch = 19, col = treatment)
-h_by_rh_w_m1 <- lm(H ~ treatment * herb + H0, data = div_2016_by_rxh_w)
-Anova(h_by_rh_w_m1)
-par(mfrow = c(2, 2))
-plot(h_by_rh_w_m1)
+create_trans_boxplot(H ~ treatment * herb * year, data = div_2016_by_rxh_w)
+h_by_rh_w_m1 <- lmer(H ~ treatment * herb * year + (1|plot), 
+                     data = div_2016_by_rxh_w)
+
+h_by_rh_w_m_fin <- get_persim_lmer(h_by_rh_w_m1)
+Anova(h_by_rh_w_m_fin)
+qqnorm(resid(h_by_rh_w_m_fin))
+qqline(resid(h_by_rh_w_m_fin))
 # no herbivore effect
 
 
@@ -118,13 +73,12 @@ plot(h_by_rh_w_m1)
 
 
 # the above analysis showed no herb effect, so use the complete dataset
-create_trans_boxplot(H ~ treatment, data = div_2016_ed_w)
-plot(H ~ H0, pch = 19, col = treatment, data = div_2016_ed_w)
-h_w_m1 <- lm(H ~ treatment + H0, data = div_2016_ed_w)
-Anova(h_w_m1)
-par(mfrow = c(2, 2))
-plot(h_w_m1)
-
+create_trans_boxplot(H ~ treatment * year, data = div_2016_ed_w)
+h_w_m1 <- lmer(H ~ treatment * year + (1|plot), data = div_2016_ed_w)
+h_w_m_fin <- get_persim_lmer(h_w_m1)
+Anova(h_w_m_fin, test.statistic = "F")
+qqnorm(resid(h_w_m_fin))
+qqline(resid(h_w_m_fin))
 
 
 
@@ -137,15 +91,13 @@ plot(h_w_m1)
 # . rain x herb -------------------------------------------------------------
 
 
-create_trans_boxplot(J ~ treatment * herb, data = div_2016_by_rxh_s)
-plot(J ~ J0, pch = 19, col = treatment, data = div_2016_by_rxh_s)
-j_by_rh_s_m1 <- lmer(J ~ year * treatment * herb + J0 + (1|plot), data = div_2016_by_rxh_s)
-j_by_rh_s_m2 <- lmer(J ~ year * treatment * herb + (1|plot), data = div_2016_by_rxh_s)
-Anova(j_by_rh_s_m1, test.statistic = "F")
-Anova(j_by_rh_s_m2, test.statistic = "F")
-plot(j_by_rh_s_m2)
-qqnorm(resid(j_by_rh_s_m2))
-qqline(resid(j_by_rh_s_m2))
+create_trans_boxplot(J ~ treatment * herb * year, data = div_2016_by_rxh_s)
+j_by_rh_s_m1 <- lmer(J ~ year * treatment * herb + (1|plot), data = div_2016_by_rxh_s)
+j_by_rh_s_m_fin <- get_persim_lmer(j_by_rh_s_m1)
+Anova(j_by_rh_s_m_fin, test.statistic = "F")
+plot(j_by_rh_s_m_fin)
+qqnorm(resid(j_by_rh_s_m_fin))
+qqline(resid(j_by_rh_s_m_fin))
 # herbxtreatment effect. So analyse rainfall and herb separately
 
 
@@ -156,12 +108,12 @@ qqline(resid(j_by_rh_s_m2))
 
 # the above analysis showed herb effect so use the daset withought herb-added
 create_trans_boxplot(J ~ treatment * year, data = div_2016_ed_s_hcont)
-plot(J ~ J0, pch = 19, col = treatment, data = div_2016_ed_s_hcont)
-j_s_m1 <- lmer(J ~ treatment * year + J0 + (1|plot), data = div_2016_ed_s_hcont)
-Anova(j_s_m1, test.statistic = "F")
-plot(j_s_m1)
-qqnorm(resid(j_s_m1))
-qqline(resid(j_s_m1))
+j_s_m1 <- lmer(J ~ treatment * year + (1|plot), data = div_2016_ed_s_hcont)
+j_s_m_fin <- get_persim_lmer(j_s_m1)
+summary(j_s_m_fin)
+plot(j_s_m_fin)
+qqnorm(resid(j_s_m_fin))
+qqline(resid(j_s_m_fin))
 
 
 
@@ -172,12 +124,14 @@ qqline(resid(j_s_m1))
 # . rain x herb -------------------------------------------------------------
 
 
-create_trans_boxplot(J ~ treatment * herb, data = div_2016_by_rxh_w)
-plot(J ~ J0, data = div_2016_by_rxh_w, pch = 19, col = treatment)
-j_by_rh_w_m1 <- lm(J ~ treatment * herb + J0, data = div_2016_by_rxh_w)
-Anova(j_by_rh_w_m1)
-par(mfrow = c(2, 2))
-plot(j_by_rh_w_m1)
+create_trans_boxplot(J ~ treatment * herb * year, data = div_2016_by_rxh_w)
+j_by_rh_w_m1 <- lmer(I(J^2) ~ treatment * herb * year + (1|plot),
+                     data = div_2016_by_rxh_w)
+j_by_rh_w_m_fin <- get_persim_lmer(j_by_rh_w_m1, show.model.res = TRUE)
+Anova(j_by_rh_w_m_fin, test.statistic = "F")
+plot(j_by_rh_w_m_fin)
+qqnorm(resid(j_by_rh_w_m_fin))
+qqline(resid(j_by_rh_w_m_fin))
 # no herbivore effect
 
 
@@ -187,12 +141,13 @@ plot(j_by_rh_w_m1)
 
 
 # the above anlaysis showed no herb effect so use the complete dataset
-create_trans_boxplot(J ~ treatment, data = div_2016_ed_w)
-plot(J ~ J0, pch = 19, col = treatment, data = div_2016_ed_w)
-j_w_m1 <- lm(J ~ treatment + J0, data = div_2016_ed_w)
-Anova(j_w_m1)
-par(mfrow = c(2, 2))
-plot(j_w_m1)
+create_trans_boxplot(J ~ treatment * year, data = div_2016_ed_w)
+j_w_m1 <- lmer(I(J^2) ~ treatment * year + (1|plot), data = div_2016_ed_w)
+j_w_m_fin <- get_persim_lmer(j_w_m1)
+Anova(j_w_m_fin, test.statistic = "F")
+plot(j_w_m_fin)
+qqnorm(resid(j_w_m_fin))
+qqline(resid(j_w_m_fin))
 
 
 
@@ -206,13 +161,14 @@ plot(j_w_m1)
 # . rain x herb -------------------------------------------------------------
 
 
-create_trans_boxplot(S ~ treatment * herb, data = div_2016_by_rxh_s)
-plot(S ~ S0, pch = 19, col = treatment, data = div_2016_by_rxh_s)
-s_by_rh_s_m1 <- lmer(S ~ year * treatment * herb + S0 + (1|plot), data = div_2016_by_rxh_s)
-Anova(s_by_rh_s_m1, test.statistic = "F")
-plot(s_by_rh_s_m1)
-qqnorm(resid(s_by_rh_s_m1))
-qqline(resid(s_by_rh_s_m1))
+create_trans_boxplot(S ~ treatment * herb * year, data = div_2016_by_rxh_s)
+s_by_rh_s_m1 <- lmer(S ~ year * treatment * herb + (1|plot), data = div_2016_by_rxh_s)
+s_by_rh_s_m_fin <- get_persim_lmer(s_by_rh_s_m1)
+
+Anova(s_by_rh_s_m_fin, test.statistic = "F")
+plot(s_by_rh_s_m_fin)
+qqnorm(resid(s_by_rh_s_m_fin))
+qqline(resid(s_by_rh_s_m_fin))
 # no herb effect
 
 
@@ -224,12 +180,12 @@ qqline(resid(s_by_rh_s_m1))
 
 # the above analysis showed no herb effect, so use the complete dataset
 create_trans_boxplot(S ~ treatment * year, data = div_2016_ed_s)
-plot(log(S) ~ log(S0), pch = 19, col = treatment, data = div_2016_ed_s)
-s_s_m1 <- lmer(S ~ treatment * year + S0 + (1|plot), data = div_2016_ed_s)
-Anova(s_s_m1, test.statistic = "F")
-plot(s_s_m1)
-qqnorm(resid(s_s_m1))
-qqline(resid(s_s_m1))
+s_s_m1 <- lmer(S ~ treatment * year + (1|plot), data = div_2016_ed_s)
+s_s_m_fin <- get_persim_lmer(s_s_m1)
+Anova(s_s_m_fin, test.statistic = "F")
+plot(s_s_m_fin)
+qqnorm(resid(s_s_m_fin))
+qqline(resid(s_s_m_fin))
 
 
 
@@ -240,12 +196,14 @@ qqline(resid(s_s_m1))
 # . rain x herb -------------------------------------------------------------
 
 
-create_trans_boxplot(S ~ treatment * herb, data = div_2016_by_rxh_w)
-plot(S ~ S0, pch = 19, col = treatment, data = div_2016_by_rxh_w)
-s_by_rh_w_m1 <- lm(S ~ treatment * herb + S0, data = div_2016_by_rxh_w)
-Anova(s_by_rh_w_m1)
-par(mfrow = c(2, 2))
-plot(s_by_rh_w_m1)
+create_trans_boxplot(S ~ treatment * herb * year, data = div_2016_by_rxh_w)
+s_by_rh_w_m1 <- lmer(S ~ treatment * herb * year + (1|plot), 
+                     data = div_2016_by_rxh_w)
+s_by_rh_w_m_fin <- get_persim_lmer(s_by_rh_w_m1, show.model.res = TRUE)
+Anova(s_by_rh_w_m_fin, test.statistic = "F")
+plot(s_by_rh_w_m_fin)
+qqnorm(resid(s_by_rh_w_m_fin))
+qqline(resid(s_by_rh_w_m_fin))
 # no herbivore effect
 
 
@@ -255,14 +213,13 @@ plot(s_by_rh_w_m1)
 
 
 # the above anlaysis showed no herb effect so use the complete dataset
-create_trans_boxplot(S ~ treatment, data = div_2016_ed_w)
-plot(S ~ S0, pch = 19, col = treatment, data = div_2016_ed_w)
-s_w_m1 <- lm(S ~ treatment + S0, data = div_2016_ed_w)
-Anova(s_w_m1)
-par(mfrow = c(2, 2))
-plot(s_w_m1)
-qqnorm(resid(s_w_m1))
-qqline(resid(s_w_m1))
+create_trans_boxplot(S ~ treatment * year, data = div_2016_ed_w)
+s_w_m1 <- lmer(S ~ treatment * year + (1|plot), data = div_2016_ed_w)
+s_w_m_fin <- get_persim_lmer(s_w_m1)
+Anova(s_w_m_fin, test.statistic = "F")
+plot(s_w_m_fin)
+qqnorm(resid(s_w_m_fin))
+qqline(resid(s_w_m_fin))
 
 
 
@@ -275,16 +232,15 @@ summary_div <- div_2016 %>%
   filter(treatment != "No.shelter" & herb == "Control") %>%       # remove no.shelter
   mutate(month = as.numeric(as.character(month))) %>%             # change month from factor to numeric
   gather(key = variable, value = value, H, S, J) %>%              # reshape df to "long" format
-  group_by(year, month, treatment, variable) %>%                  # summary for each group
-  summarise_each(funs(M = mean, SE = se, N = get_n), value) %>%   # get mean, SE, sample size for each group
-  mutate(season = paste(year, month.abb[month], sep = "-"))       # create new label (e.g. 2014-Oct)
+  group_by(year, season, treatment, variable) %>%                 # summary for each group
+  summarise_each(funs(M = mean, SE = se, N = get_n), value)       # get mean, SE, sample size for each group
 
 
 # create figures
 fig_div <- dlply(summary_div, .(variable), function(x){
-  ggplot(data = x, aes(x = season, y = M, fill = treatment)) +    # change fill colors by treatment
-    labs(x = "Time") +                                            # label for x axis
-  
+  ggplot(data = x, aes(x = year, y = M, fill = treatment)) +      # change fill colors by treatment
+    labs(x = "Year") +                                            # label for x axis
+    facet_grid(. ~ season) +
                                                                   # make a main plot
     geom_bar(stat = "identity", position = position_dodge(.9)) +  # create bargrph. Each bar is placed next to each other
     geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .5,  # add error bars
@@ -298,9 +254,7 @@ fig_div[[1]]
 
 # add legend
 fig_div[[1]] <- fig_div[[1]] + 
-  ylim(c(0, 2.5)) +
-  guides(fill = guide_legend(nrow = 3)) +
-  theme(legend.position  = c(.8, .85),
+  theme(legend.position  = c(.85, .75),
         legend.key.width = unit(.2, "inches"))
 fig_div[[1]]
 

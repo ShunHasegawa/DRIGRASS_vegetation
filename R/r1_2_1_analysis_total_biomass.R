@@ -1,92 +1,43 @@
 
 # prepare df for analysis -------------------------------------------------
 
-
-# > dataframe to test rainfall --------------------------------------------
-
-
-# remove not sheltered
-ab_tot_biom_ed <- filter(ab_tot_biom, treatment != "No.shelter")
-
-
-# Time0 to be used as a covariate 
-biom_0 <- ab_tot_biom_ed %>%                                      
-  filter(season == "winter" & year == 2013) %>% 
-  transmute(plot, live0 = live, dead0 = dead, total0 = total)
-
-
-
-
-# >> summer ---------------------------------------------------------------
-
-
-# complete dataset
-ab_biom_s <- ab_tot_biom_ed %>% 
-  filter(season == "summer") %>% 
-  left_join(biom_0, by = "plot")
-
-
-# subset of data only with 'Control' herb. This will be used to test only
-# rainfall treatments when herb has a significant effect
-ab_biom_s_hcont <- filter(ab_biom_s, herb == "Control")
-
-
-
-
-# >> winter ------------------------------------------------------------------
-
-
-# complete dataset
-ab_biom_w <- ab_tot_biom_ed %>% 
-  filter(season == "winter" & year != 2013) %>% 
-  left_join(biom_0, by = "plot")
-
-
-# subset of data only with 'Control' herb. This will be used to test only
-# rainfall treatments when herb has a significant effect
-ab_biom_w_hcont <- filter(ab_biom_w, herb == "Control")
-
-
-
-
-# > dataframe to test rainfall x herb --------------------------------------------
-
-
-# summer
-tld_biom_by_rxh_s <- ab_biom_s %>%
-  filter(treatment %in% c("Pulsed.drought", "Ambient", "Drought")) %>%
-  droplevels(.)
-
-
-# winter
-tld_biom_by_rxh_w <- ab_biom_w %>%
-  filter(treatment %in% c("Pulsed.drought", "Ambient", "Drought")) %>%
-  droplevels(.)
-
+ab_tot_biom_ed   <- filter(ab_tot_biom, treatment != "No.shelter")  # remove not sheltered
+ab_biom_s        <- filter(ab_tot_biom_ed, season == "Summer")      # Test rainfall; summer; complete dataset
+ab_biom_w        <- filter(ab_tot_biom_ed, season == "Winter")      # Test rainfall; winter; complete dataset
+ab_biom_s_hcont  <- filter(ab_biom_s, herb == "Control")            # Test rainfall; summer; subset Control-herb. subset of data only with 'Control' herb. This will be used to test only rainfall treatments when herb has a significant effect
+ab_biom_w_hcont  <- filter(ab_biom_w, herb == "Control")            # Test rainfall; winter; subset Control-herb
+ab_biom_by_rxh_s <- filter(ab_biom_s, treatment %in% c("Pulsed.drought", "Ambient", "Drought"))  # Test rainfall x herb; summer
+ab_biom_by_rxh_w <- filter(ab_biom_w, treatment %in% c("Pulsed.drought", "Ambient", "Drought"))  # Test rainfall x herb; summer
+  
 
 
 
 # analysis ----------------------------------------------------------------
 
 
-# > total biomass ---------------------------------------------------------
+# total biomass ---------------------------------------------------------
 
 
-# >> summer ---------------------------------------------------------------
+# > summer ---------------------------------------------------------------
 
 
 # . rain x herb -----------------------------------------------------------
 
-create_trans_boxplot(total ~ treatment * herb * year, data = tld_biom_by_rxh_s)
-plot(total ~ total0, pch = 19, col = treatment, data = tld_biom_by_rxh_s)
-total_rh_s_m1 <- lmer(log(total) ~ treatment * herb * year + log(total0) + (1|total0), 
-                      data = tld_biom_by_rxh_s)
-Anova(total_rh_s_m1, test.statistic = "F")
-plot(total_rh_s_m1)
-qqnorm(resid(total_rh_s_m1))
-qqline(resid(total_rh_s_m1))
-# no herb effect
-
+create_trans_boxplot(total ~ treatment * herb * year, data = ab_biom_by_rxh_s)
+total_rh_s_m1 <- lmer(log(total) ~ treatment * herb * year + (1|plot), 
+                      data = ab_biom_by_rxh_s)
+total_rh_s_m_fin <- get_persim_lmer(total_rh_s_m1, show.model.res = TRUE)
+Anova(total_rh_s_m_fin, test.statistic = "F")
+plot(total_rh_s_m_fin)
+qqnorm(resid(total_rh_s_m_fin))
+qqline(resid(total_rh_s_m_fin))
+ # one oulier 
+which.min(resid(total_rh_s_m_fin))
+total_rh_s_m2 <- update(total_rh_s_m1, subset = -62)
+qqnorm(resid(total_rh_s_m2))
+qqline(resid(total_rh_s_m2))
+Anova(total_rh_s_m2, test.statistic = "F")
+ # save results
 
 
 
@@ -95,31 +46,38 @@ qqline(resid(total_rh_s_m1))
 
 # the above analysis showed no herb effect so use the complete dataset
 create_trans_boxplot(total ~ treatment * year, data = ab_biom_s)
-plot(total ~ total0, pch = 19, col = treatment, data = ab_biom_s)
-total_s_m1 <- lmer(log(total) ~ year * treatment + log(total0) + (1|plot), data = ab_biom_s)
-Anova(total_s_m1, test.statistic = "F")
-plot(total_s_m1)
-qqnorm(resid(total_s_m1))
-qqline(resid(total_s_m1))
+total_s_m1    <- lmer(log(total) ~ year * treatment + (1|plot), data = ab_biom_s)
+total_s_m_fin <- get_persim_lmer(total_s_m1, show.model.res = TRUE)
+Anova(total_s_m_fin, test.statistic = "F")
+plot(total_s_m_fin)
+qqnorm(resid(total_s_m_fin))
+qqline(resid(total_s_m_fin))
 
 
 
 
-
-# >> winter ---------------------------------------------------------------
+# > winter ---------------------------------------------------------------
 
 
 # . rain x herb -----------------------------------------------------------
 
-create_trans_boxplot(total ~ treatment * herb * year, data = tld_biom_by_rxh_w)
-plot(total ~ total0, pch = 19, col = treatment, data = tld_biom_by_rxh_w)
-total_rh_w_m1 <- lmer(log(total) ~ treatment * herb * year + log(total0) + (1|total0), 
-                      data = tld_biom_by_rxh_w)
-Anova(total_rh_w_m1, test.statistic = "F")
-plot(total_rh_w_m1)
-qqnorm(resid(total_rh_w_m1))
-qqline(resid(total_rh_w_m1))
-# no herb effect
+create_trans_boxplot(total ~ treatment * herb * year, data = ab_biom_by_rxh_w)
+total_rh_w_m1 <- lmer(I(total^(1/3)) ~ treatment * herb * year + (1|plot), 
+                      data = ab_biom_by_rxh_w)
+total_rh_w_m_fin <- get_persim_lmer(total_rh_w_m1, show.model.res = TRUE)
+Anova(total_rh_w_m_fin, test.statistic = "F")
+plot(total_rh_w_m_fin)
+qqnorm(resid(total_rh_w_m_fin))
+qqline(resid(total_rh_w_m_fin))
+# quite poor...
+sort(resid(total_rh_w_m_fin), index.return = TRUE)$ix[1:3]
+total_rh_w_m2 <- update(total_rh_w_m1, subset = -c(14, 25, 13))
+plot(total_rh_w_m2)
+qqnorm(resid(total_rh_w_m2))
+qqline(resid(total_rh_w_m2))
+total_rh_w_m_fin2 <- get_persim_lmer(total_rh_w_m2, show.model.res = TRUE)
+Anova(total_rh_w_m_fin2, test.statistic = "F")
+ # same results
 
 
 
@@ -129,13 +87,181 @@ qqline(resid(total_rh_w_m1))
 
 # the above analysis showed no herb effect so use the complete dataset
 create_trans_boxplot(total ~ treatment * year, data = ab_biom_w)
-plot(total ~ total0, pch = 19, col = treatment, data = ab_biom_w)
-total_w_m1 <- lmer(log(total) ~ year * treatment + log(total0) + (1|plot), 
-                   data = ab_biom_w)
-Anova(total_w_m1, test.statistic = "F")
-plot(total_w_m1)
-qqnorm(resid(total_w_m1))
-qqline(resid(total_w_m1))
+total_w_m1 <- lmer(log(total) ~ year * treatment + (1|plot), data = ab_biom_w)
+total_w_m_fin <- get_persim_lmer(total_w_m1)
+Anova(total_w_m_fin, test.statistic = "F")
+plot(total_w_m_fin)
+qqnorm(resid(total_w_m_fin))
+qqline(resid(total_w_m_fin))
+ # quite poor
+rmv <- sort(resid(total_w_m1), index.return = TRUE)$ix[1:5]
+total_w_m2 <- update(total_w_m1, subset = -rmv)
+plot(total_w_m2)
+qqnorm(resid(total_w_m2))
+qqline(resid(total_w_m2))
+Anova(total_w_m2, test.statistic = "F")
+ # same results
+
+
+
+
+
+# Live bioass --------------------------------------------------------------------
+
+
+# > summer ---------------------------------------------------------------
+
+
+# . rain x herb -----------------------------------------------------------
+
+create_trans_boxplot(live ~ treatment * herb * year, data = ab_biom_by_rxh_s)
+live_rh_s_m1 <- lmer(log(live) ~ treatment * herb * year + (1|plot), 
+                     data = ab_biom_by_rxh_s)
+live_rh_s_m_fin <- get_persim_lmer(live_rh_s_m1, show.model.res = TRUE)
+Anova(live_rh_s_m_fin, test.statistic = "F")
+plot(live_rh_s_m_fin)
+qqnorm(resid(live_rh_s_m_fin))
+qqline(resid(live_rh_s_m_fin))
+# one oulier 
+which.min(resid(live_rh_s_m_fin))
+live_rh_s_m2 <- update(live_rh_s_m1, subset = -62)
+qqnorm(resid(live_rh_s_m2))
+qqline(resid(live_rh_s_m2))
+Anova(live_rh_s_m2, test.statistic = "F")
+# save results
+
+
+
+
+# . rain ------------------------------------------------------------------
+
+# the above analysis showed no herb effect so use the complete dataset
+create_trans_boxplot(live ~ treatment * year, data = ab_biom_s)
+live_s_m1    <- lmer(I(live^(1/3)) ~ year * treatment + (1|plot), data = ab_biom_s)
+live_s_m_fin <- get_persim_lmer(live_s_m1, show.model.res = TRUE)
+Anova(live_s_m_fin, test.statistic = "F")
+plot(live_s_m_fin)
+qqnorm(resid(live_s_m_fin))
+qqline(resid(live_s_m_fin))
+
+
+
+
+# > winter ---------------------------------------------------------------
+
+
+# . rain x herb -----------------------------------------------------------
+ab_biom_by_rxh_w_ed <- ab_biom_by_rxh_w[complete.cases(ab_biom_by_rxh_w), ]
+create_trans_boxplot(live ~ treatment * herb * year, data = ab_biom_by_rxh_w_ed)
+live_rh_w_m1 <- lmer(log(live) ~ treatment * herb * year + (1|plot), 
+                     data = ab_biom_by_rxh_w_ed)
+live_rh_w_m_fin <- get_persim_lmer(live_rh_w_m1, show.model.res = TRUE)
+Anova(live_rh_w_m_fin, test.statistic = "F")
+plot(live_rh_w_m_fin)
+qqnorm(resid(live_rh_w_m_fin))
+qqline(resid(live_rh_w_m_fin))
+# herbivore effect
+
+
+
+
+# . rain ------------------------------------------------------------------
+
+
+# the above analysis showed significant herb effect so use the subset of dataset
+ab_biom_w_hcont_ed <- ab_biom_w_hcont[complete.cases(ab_biom_w_hcont), ]
+ftable(xtabs(~treatment + year, ab_biom_w_hcont_ed))
+
+create_trans_boxplot(live ~ treatment * year, data = ab_biom_w_hcont_ed)
+live_w_m1 <- lmer(log(live) ~ year * treatment + (1|plot), data = ab_biom_w_hcont_ed)
+live_w_m_fin <- get_persim_lmer(live_w_m1)
+Anova(live_w_m_fin, test.statistic = "F")
+plot(live_w_m_fin)
+qqnorm(resid(live_w_m_fin))
+qqline(resid(live_w_m_fin))
+
+
+
+# > summer ---------------------------------------------------------------
+
+
+# . rain x herb -----------------------------------------------------------
+
+create_trans_boxplot(Dead ~ treatment * herb * year, data = ab_biom_by_rxh_s)
+Dead_rh_s_m1 <- lmer(log(Dead) ~ treatment * herb * year + (1|plot), 
+                     data = ab_biom_by_rxh_s)
+Dead_rh_s_m_fin <- get_persim_lmer(Dead_rh_s_m1, show.model.res = TRUE)
+Anova(Dead_rh_s_m_fin, test.statistic = "F")
+plot(Dead_rh_s_m_fin)
+qqnorm(resid(Dead_rh_s_m_fin))
+qqline(resid(Dead_rh_s_m_fin))
+
+
+
+
+# . rain ------------------------------------------------------------------
+
+# the above analysis showed no herb effect so use the complete dataset
+create_trans_boxplot(Dead ~ treatment * year, data = ab_biom_s)
+Dead_s_m1    <- lmer(log(Dead) ~ year * treatment + (1|plot), data = ab_biom_s)
+Dead_s_m_fin <- get_persim_lmer(Dead_s_m1, show.model.res = TRUE)
+Anova(Dead_s_m_fin, test.statistic = "F")
+plot(Dead_s_m_fin)
+qqnorm(resid(Dead_s_m_fin))
+qqline(resid(Dead_s_m_fin))
+
+
+
+
+# > winter ---------------------------------------------------------------
+
+
+# . rain x herb -----------------------------------------------------------
+range(ab_biom_by_rxh_w_ed$Dead)
+create_trans_boxplot(Dead + 1 ~ treatment * herb * year, data = ab_biom_by_rxh_w_ed)
+Dead_rh_w_m1 <- lmer(Dead ~ treatment * herb * year + (1|plot), 
+                     data = ab_biom_by_rxh_w_ed)
+Dead_rh_w_m_fin <- get_persim_lmer(Dead_rh_w_m1, show.model.res = TRUE)
+Anova(Dead_rh_w_m_fin, test.statistic = "F")
+plot(Dead_rh_w_m_fin)
+qqnorm(resid(Dead_rh_w_m_fin))
+qqline(resid(Dead_rh_w_m_fin))
+# very poor
+# remove 0
+create_trans_boxplot(Dead + 1 ~ treatment * herb * year, data = 
+                       subset(ab_biom_by_rxh_w_ed, Dead > 0))
+Dead_rh_w_m2 <- lmer(log(Dead) ~ treatment * herb * year + (1|plot), 
+                     data = ab_biom_by_rxh_w_ed, subset = Dead > 0)
+plot(Dead_rh_w_m2)
+qqnorm(resid(Dead_rh_w_m2))
+qqline(resid(Dead_rh_w_m2))
+Anova(Dead_rh_w_m2, test.statistic = "F")
+# very similar results with an improved model, showing herb effect
+
+
+
+
+# . rain ------------------------------------------------------------------
+
+
+# the above analysis showed significant herb effect so use the subset of dataset
+create_trans_boxplot(Dead + 1 ~ treatment * year, data = ab_biom_w_hcont_ed)
+Dead_w_m1 <- lmer(Dead ~ year * treatment + (1|plot), data = ab_biom_w_hcont_ed)
+Dead_w_m_fin <- get_persim_lmer(Dead_w_m1)
+Anova(Dead_w_m_fin, test.statistic = "F")
+plot(Dead_w_m_fin)
+qqnorm(resid(Dead_w_m_fin))
+qqline(resid(Dead_w_m_fin))
+# very poor....
+
+create_trans_boxplot(Dead ~ treatment * year, data = subset(ab_biom_w_hcont_ed, Dead > 0))
+Dead_w_m2 <- lmer(sqrt(Dead) ~ year * treatment + (1|plot), data = ab_biom_w_hcont_ed, 
+                  subset = Dead > 0)
+plot(Dead_w_m2)
+qqnorm(resid(Dead_w_m2))
+qqline(resid(Dead_w_m2))
+Anova(Dead_w_m2)
+# same result with an improved model
 
 
 
@@ -147,17 +273,17 @@ qqline(resid(total_w_m1))
 summary_ab_biom <- ab_tot_biom %>%
   mutate(month = as.numeric(as.character(month))) %>% 
   filter(treatment != "No.shelter" & herb == "Control") %>% 
-  gather(key = variable, value = value, total, live, dead) %>% 
+  gather(key = variable, value = value, total, live, Dead) %>% 
   group_by(year, month, season, treatment, variable) %>% 
-  summarise_each(funs(M  = mean, SE = se, N  = get_n), value) %>% 
-  mutate(time = paste(year, month.abb[month], sep = "-"))
+  summarise_each(funs(M  = mean, SE = se, N  = get_n), value)
 
 
 
 # create plots
 fig_ab_biom <- dlply(summary_ab_biom, .(variable), function(x){
-  ggplot(data = x, aes(x = time, y = M, fill = treatment)) +
-    labs(x = "Time") +
+  ggplot(data = x, aes(x = year, y = M, fill = treatment)) +
+    facet_grid(. ~ season) +
+    labs(x = "Year") +
     
     geom_bar(stat = "identity", position = position_dodge(.9)) +
     geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .5,
@@ -213,101 +339,6 @@ ggsavePP(filename = "Output/Figs/biomass", plot = ab_biom_plot_merged,
 
 
 
-# # df to test rain x herb interaction
-# tld_biom_by_rxh <- ab_tot_biom_ed %>% 
-#   filter(treatment %in% c("Pulsed drought", "Ambient", "Drought")) %>% 
-#   droplevels(.)
-# 
-# 
-# # analysis ----------------------------------------------------------------
-# 
-# 
-# # > live --------------------------------------------------------------------
-# 
-# 
-# # . rain x herb -----------------------------------------------------------
-# 
-# 
-# create_trans_boxplot(live ~ treatment * herb, data = tld_biom_by_rxh)
-# live_by_rh_m1 <- lm(sqrt(live) ~ treatment * herb, data = tld_biom_by_rxh)
-# anova(live_by_rh_m1)
-# par(mfrow = c(2, 2))
-# plot(live_by_rh_m1)
-# # no interaction or herbivore effect
-# 
-# 
-# 
-# 
-# # . rain ------------------------------------------------------------------
-# 
-# 
-# create_trans_boxplot(live ~ treatment, data = ab_tot_biom_ed)
-# live_m1 <- lm(sqrt(live) ~ treatment, data = ab_tot_biom_ed)
-# anova(live_m1)
-# par(mfrow = c(2, 2))
-# plot(live_m1)
-# visreg(live_m1)
-# 
-# 
-# 
-# 
-# # > total -------------------------------------------------------------------
-# 
-# 
-# # . rain x herb -----------------------------------------------------------
-# 
-# create_trans_boxplot(tot_biomass ~ treatment * herb, data = tld_biom_by_rxh)
-# tot__by_rh_m1 <- lm(sqrt(tot_biomass) ~ treatment * herb, data = ab_tot_biom_ed)
-# anova(tot__by_rh_m1)
-# par(mfrow = c(2, 2))
-# plot(tot__by_rh_m1)
-# # no interaction or herbivore effect
-# 
-# 
-# 
-# 
-# # . rain ------------------------------------------------------------------
-# 
-# 
-# create_trans_boxplot(tot_biomass ~ treatment, data = ab_tot_biom_ed)
-# tot_m1 <- lm(sqrt(tot_biomass) ~ treatment, data = ab_tot_biom_ed)
-# anova(tot_m1)
-# par(mfrow = c(2, 2))
-# plot(tot_m1)
-# visreg(tot_m1)
-# 
-# 
-# 
-# 
-# # > dead --------------------------------------------------------------------
-# 
-# 
-# # . rain x herb -----------------------------------------------------------
-# 
-# 
-# create_trans_boxplot(Dead ~ treatment * herb, data = tld_biom_by_rxh)
-# dead_by_rh_m1 <- lm(log(Dead) ~ treatment * herb, data = tld_biom_by_rxh)
-# anova(dead_by_rh_m1)
-# par(mfrow = c(2, 2))
-# plot(dead_by_rh_m1)
-# # no interaction or herbivore effect
-# 
-# 
-# 
-# 
-# # . rain ------------------------------------------------------------------
-# 
-# 
-# create_trans_boxplot(Dead ~ treatment, data = ab_tot_biom_ed)
-# dead_m1 <- lm(log(Dead) ~ treatment, data = ab_tot_biom_ed)
-# anova(dead_m1)
-# par(mfrow = c(2, 2))
-# plot(dead_m1)
-# visreg(dead_m1)
-# 
-# 
-# 
-# 
 # # figure ------------------------------------------------------------------
 # 
 # biom_m_list <- list(live = live_m1, Dead = dead_m1, tot_biomass = tot_m1)
@@ -330,7 +361,7 @@ ggsavePP(filename = "Output/Figs/biomass", plot = ab_biom_plot_merged,
 # 
 # 
 # # create summary df
-# summary_tld_biom <- ab_tot_biom_ed %>% 
+# summary_ab_biom <- ab_tot_biom_ed %>% 
 #   gather(variable, value, tot_biomass, Dead, live) %>%
 #   group_by(treatment, variable) %>% 
 #   summarise_each(funs(M = mean, SE = se, N = get_n), value) %>% 
@@ -341,7 +372,7 @@ ggsavePP(filename = "Output/Figs/biomass", plot = ab_biom_plot_merged,
 # 
 # 
 # # plot
-# biomass_fig_list <- dlply(summary_tld_biom, .(variable), function(x){
+# biomass_fig_list <- dlply(summary_ab_biom, .(variable), function(x){
 #   p <- ggplot(x, aes(x = treatment, y = M, fill = treatment)) +
 #     labs(x = NULL) +
 #     

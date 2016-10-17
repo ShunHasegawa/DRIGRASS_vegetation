@@ -1,17 +1,14 @@
 
-# create summary tables -----------------------------------------------------
-
-
 # put all required dfs into a list
-all_list <- list('total_biomass'  = ab_tot_biom, 
-                 'biomass_bySpp' = ab_spp_biom, 
+all_list <- list('total_biomass'  = ab_tot_biom,  
+                 'biomass_bySpp'  = ab_spp_biom,  
                  'diversity'      = div_2016, 
-                 'biomass_byPfg' = pfg_2016)
+                 'biomass_byPfg'  = pfg_2016)
 
 
 
 
-# > by rainfall treatments ------------------------------------------------
+# by rainfall treatments ------------------------------------------------
 
 
 summary_by_rain_list <- llply(all_list, function(x){
@@ -29,12 +26,6 @@ l_ply(names(summary_by_rain_list), function(x)
             file      = paste0("Output/Tables/summary_csv/summary_", x,  # file names are defined by object names in a list 
                                "_byRain.csv"),  
             row.names = FALSE))
-
-
-# save as xlxs
-writeWorksheetToFile(file  = "Output/Tables/summary_byRain.xlsx",         # define file name to be saved
-                     data  = llply(summary_by_rain_list, as.data.frame),  # writeWorksheetToFile doesn't take dplyr object so turn them into data frames using as.data.frame
-                     sheet = names(summary_by_rain_list))                 # sheet names in excel are defined by object names a list
 
 
 
@@ -59,12 +50,6 @@ l_ply(names(summary_by_herb_list), function(x)
             row.names = FALSE))
 
 
-# save as exel
-writeWorksheetToFile(file  = "Output/Tables/summary_byHerb.xlsx", 
-                     data  = llply(summary_by_herb_list, as.data.frame),
-                     sheet = names(summary_by_herb_list))
-
-
 
 
 # by rainfall x herbivore interaction -------------------------------------
@@ -87,7 +72,27 @@ l_ply(names(summary_by_rxh_list), function(x)
             row.names = FALSE))
 
 
-# save as exel
-writeWorksheetToFile(file  = "Output/Tables/summary_byRxH.xlsx", 
-                     data  = llply(summary_by_rxh_list, as.data.frame),
-                     sheet = names(summary_by_rxh_list))
+
+
+# save as exel ------------------------------------------------------------
+
+
+# store all summar tables in a list
+summar_tbl_list <- llply(names(all_list), function(x){
+  list('raw'     = all_list[[x]],
+       'by_rain' = summary_by_rain_list[[x]],
+       'by_herb' = summary_by_herb_list[[x]],
+       'by_RxH'  = summary_by_rxh_list[[x]])
+})
+names(summar_tbl_list) <- names(all_list)
+
+
+# save as excel
+l_ply(names(summar_tbl_list), function(x){
+  filename  <- paste0("Output/Tables/summary_", x, ".xlsx")
+  data_list <- summar_tbl_list[[x]]
+  writeWorksheetToFile(file        = filename, 
+                       data        = llply(data_list, as.data.frame),
+                       sheet       = names(data_list), 
+                       clearSheets = TRUE)
+  })

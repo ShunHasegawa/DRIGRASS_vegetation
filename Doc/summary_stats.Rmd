@@ -1,7 +1,7 @@
 ---
 title: "DRIGRASS -Summary stats -"
 author: "Shun Hasegawa"
-date: "12 October 2016"
+date: "17 October 2016"
 output:
   html_document:
     toc: true
@@ -34,7 +34,7 @@ lmer_anova_tbl <- function(lmermod, ...){
 
 
 ## Introduction
-Here, I show the summary results of statistical analysis for the DRIGRASS experiment. Repeated-measures ANOVA was performed separately for summer (Apr) and winter (Oct) data. In order to take initial heterogeneity into account, I used October 2013 data (the first harvest) as a covariate. The covariate in summary tables below is shown as "reponse variable0", for example, S0 for for species richness (S). Firstly, interaction effects between rainfall and herbivore were assessed using a subset of the data with the rainfall treatments of Pulsed.drought, Ambient and Drought. Where there was a significant Herbivore effect (indicated as either main or interaction effect), I removed added-herbivore plots from the dataset and performed repeated-measures ANOVA for rainfall treatments (_n_ = 6). Where there was no Herbivore effect, the full dataset was analysed for rainfall treatment (_n_ = 6 or 12).
+Here, I show the summary results of statistical analysis for the DRIGRASS experiment. Repeated-measures ANOVA was performed separately for summer (Apr) and winter (Oct) data. Firstly, interaction effects between rainfall and herbivore were assessed using a subset of the data with the rainfall treatments of Pulsed.drought, Ambient and Drought. Secondly, where there was a significant Herbivore effect (indicated as either main or interaction effect), I removed added-herbivore plots from the dataset and performed repeated-measures ANOVA for rainfall treatments (_n_ = 6). Where there was no Herbivore effect, the full dataset was analysed for rainfall treatment (_n_ = 6 or 12). Also, I perfomed one-way ANOVA for each season in each year individually. 
 
 
 
@@ -49,23 +49,23 @@ grid.draw(ab_biom_plot_merged)
 
 
 #### Summer
-```{r biom_tbl_summer, echo=FALSE, results='asis', fig.width=6, fig.height=6, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
-lmer_anova_tbl(total_rh_s_m1, 
+```{r biom_tbl_summer, echo=FALSE, results='asis', fig.width=5, fig.height=6, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
+lmer_anova_tbl(total_rh_s_m_fin, 
            caption = "Total biomass in summer for rainfall and herbivore treatments")
 
-lmer_anova_tbl(total_s_m1, 
+lmer_anova_tbl(total_s_m_fin, 
            caption = "Total biomass in summer for rainfall treatments")
-plot(lsmeans::lsmeans(total_s_m1, by = "year", specs = "treatment"), comparisons = TRUE)
+plot(lsmeans::lsmeans(total_s_m_fin, by = "year", specs = "treatment"), comparisons = TRUE)
 ```
 
 #### Winter
 ```{r biom_tbl_winter, echo=FALSE, results='asis', fig.width=3, fig.height=2.5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
-lmer_anova_tbl(total_rh_w_m1, 
+lmer_anova_tbl(total_rh_w_m_fin, 
            caption = "Total biomass in winter for rainfall and herbivore treatments")
 
-lmer_anova_tbl(total_w_m1, 
+lmer_anova_tbl(total_w_m_fin, 
            caption = "Total biomass in winter for rainfall treatments")
-plot(lsmeans::lsmeans(total_w_m1, "year"), comparisons = TRUE)
+plot(lsmeans::lsmeans(total_w_m_fin, "year"), comparisons = TRUE)
 ```
 
 
@@ -82,27 +82,23 @@ grid.draw(div_plot_merged)
 
 
 #### Summer
-```{r h_s_tbl_rxh, echo=FALSE, results='asis', fig.width=3, fig.height=2.5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
-lmer_anova_tbl(h_by_rh_s_m1, caption = "Shannon-weaver index in summer for rainfall and herbivore treatments")
-plot(lsmeans::lsmeans(h_by_rh_s_m1, "herb"), comparisons = TRUE)
-```
 
 ```{r h_s_tbl_rain, echo=FALSE, results='asis', fig.width=3, fig.height=2.5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
+lmer_anova_tbl(h_by_rh_s_m_fin, caption = "Shannon-weaver index in summer for rainfall and herbivore treatments")
 
-lmer_anova_tbl(h_s_m1, caption = "Shannon-weaver index in summer for rainfall")
-plot(lsmeans::lsmeans(h_s_m1, "treatment"), comparisons = TRUE)
-plot(lsmeans::lsmeans(h_s_m1, "year"), comparisons = TRUE)
+lmer_anova_tbl(h_s_m_fin, caption = "Shannon-weaver index in summer for rainfall")
+plot(lsmeans::lsmeans(h_s_m_fin, "treatment"), comparisons = TRUE)
 ```
 
 
 
 
 #### Winter
-```{r h_w_tbl, echo=FALSE, results='asis', fig.width=3, fig.height=2.5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
-lmer_anova_tbl(h_by_rh_w_m1, caption = "Shannon-weaver index in winter for rainfall and herbivore treatments")
+```{r h_w_tbl, echo=FALSE, results='asis', fig.width=5, fig.height=4, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
+lmer_anova_tbl(h_by_rh_w_m_fin, caption = "Shannon-weaver index in winter for rainfall and herbivore treatments")
 
-lmer_anova_tbl(h_w_m1, caption = "Shannon-weaver index in winter for rainfall")
-plot(lsmeans::lsmeans(h_w_m1, "treatment"), comparisons = TRUE)
+lmer_anova_tbl(h_w_m_fin, caption = "Shannon-weaver index in winter for rainfall")
+plot(lsmeans::lsmeans(h_w_m_fin, by = "year", specs = "treatment"), comparisons = TRUE)
 
 ```
 
@@ -112,18 +108,23 @@ plot(lsmeans::lsmeans(h_w_m1, "treatment"), comparisons = TRUE)
 ### Evenness (_J'_)
 
 #### Summer
-```{r j_s_tbl, echo=FALSE, results='asis'}
-lmer_anova_tbl(j_by_rh_s_m1, caption = "Species evennes in summer for rainfall and herbivore treatments")
-
-lmer_anova_tbl(j_s_m1, caption = "Species evennes in summer for rainfall")
+```{r j_s_tbl_rxh, echo=FALSE, results='asis', fig.width=5, fig.height=5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
+lmer_anova_tbl(j_by_rh_s_m_fin, caption = "Species evennes in summer for rainfall and herbivore treatments")
+plot(lsmeans::lsmeans(j_by_rh_s_m_fin, by = "treatment", specs = "herb"), comparisons = TRUE)
 ```
 
 
-#### Winter
-```{r j_w_tbl, echo=FALSE, results='asis'}
-lmer_anova_tbl(j_by_rh_w_m1, caption = "Species evennes in winter for rainfall and herbivore treatments")
+```{r j_s_tbl_rain, echo=FALSE, results='asis'}
+j_s_m_fin@call
+```
+None of fixed term was significant.
 
-lmer_anova_tbl(j_w_m1, caption = "Species evennes in winter for rainfall")
+
+#### Winter
+```{r j_w_tbl, echo=FALSE, results='asis', fig.width=3, fig.height=2.5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
+lmer_anova_tbl(j_by_rh_w_m_fin, caption = "Species evennes in winter for rainfall and herbivore treatments")
+lmer_anova_tbl(j_w_m_fin, caption = "Species evennes in winter for rainfall")
+plot(lsmeans::lsmeans(j_w_m_fin, "year"), comparisons = TRUE)
 ```
 
 
@@ -133,36 +134,56 @@ lmer_anova_tbl(j_w_m1, caption = "Species evennes in winter for rainfall")
 
 #### Summer
 ```{r s_s_tbl, echo=FALSE, results='asis', fig.width=3, fig.height=2.5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
-lmer_anova_tbl(s_by_rh_s_m1, caption = "Species richness in summer for rainfall and herbivore treatments")
+lmer_anova_tbl(s_by_rh_s_m_fin, caption = "Species richness in summer for rainfall and herbivore treatments")
 
-lmer_anova_tbl(s_s_m1, caption = "Species richness in summer for rainfall")
-plot(lsmeans::lsmeans(s_s_m1, "treatment"), comparisons = TRUE)
-plot(lsmeans::lsmeans(s_s_m1, "year"), comparisons = TRUE)
+lmer_anova_tbl(s_s_m_fin, caption = "Species richness in summer for rainfall")
+plot(lsmeans::lsmeans(s_s_m_fin, "treatment"), comparisons = TRUE)
+plot(lsmeans::lsmeans(s_s_m_fin, "year"), comparisons = TRUE)
 ```
 
 
 #### Winter
 ```{r s_w_tbl, echo=FALSE, results='asis', fig.width=3, fig.height=2.5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
-lmer_anova_tbl(s_by_rh_w_m1, caption = "Species richness in winter for rainfall and herbivore treatments")
+lmer_anova_tbl(s_by_rh_w_m_fin, caption = "Species richness in winter for rainfall and herbivore treatments")
 
-lmer_anova_tbl(s_w_m1, caption = "Species richness in winter for rainfall")
-plot(lsmeans::lsmeans(s_w_m1, "treatment"), comparisons = TRUE)
+lmer_anova_tbl(s_w_m_fin, caption = "Species richness in winter for rainfall")
+plot(lsmeans::lsmeans(s_w_m_fin, "treatment"), comparisons = TRUE)
+plot(lsmeans::lsmeans(s_w_m_fin, "year"), comparisons = TRUE)
 ```
 
 
 
 
-<!-- ## C$_3$ ratios -->
+### C$_3$ ratios
 
-<!-- ```{r c3_fig, echo=FALSE, fig.height=4, fig.width=4, results='hide'} -->
-<!-- fig_c3r -->
-<!-- ``` -->
+```{r c3_fig, echo=FALSE, fig.height=3, fig.width=6, results='hide'}
+fig_c3r
+```
 
 
-<!-- ```{r c3_tbl, echo=FALSE, results='asis'} -->
-<!-- pander(anova(h_m1), justify = "right", caption = "C3 ratios") -->
-<!-- ``` -->
+#### Summer
+```{r c3_tbl_rxh, echo=FALSE, results='asis', fig.width=5, fig.height=6, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
+lmer_anova_tbl(c3_by_rh_s_fin, caption = "C3 propotion in summer for rainfall and herbivore treatments")
 
+lmer_anova_tbl(c3_s_m_fin, caption = "C3 propotion in summer for rainfall treatments")
+plot(lsmeans::lsmeans(c3_s_m_fin, by = "year",spec = "treatment"), comparisons = TRUE)
+```
+
+```{r c3_tbl_r, echo=FALSE, results='asis', fig.width=5, fig.height=5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
+lmer_anova_tbl(c3_by_rh_w_fin, caption = "C3 propotion in winter for rainfall and herbivore treatments")
+
+lmer_anova_tbl(c3_w_m_fin, caption = "C3 propotion in winter for rainfall treatments")
+plot(lsmeans::lsmeans(c3_w_m_fin, by = "year",spec = "treatment"), comparisons = TRUE)
+```
+
+
+### One-way ANOVA for each harvest in each year
+```{r oneway_anova_tbl, echo=FALSE, results='asis', warning=FALSE}
+emphasize.strong.cells(cbind(which(summary_tbl[, 4] <= 0.05), 4))
+emphasize.italics.cols(4)
+pander(summary_tbl, justify = "right", split.table = Inf, caption = "Results of one-way ANOVA and summary with mean±SE (n = 6 [control-herb] or 12[added- & control-herb]). Where there was a significant treatment effect at P < 0.05, post-hoc tests were performed. The results of post-hoc comparisons are shown by letters alongside parenthesis.")
+
+```
 
 
 

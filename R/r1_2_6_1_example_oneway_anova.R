@@ -40,4 +40,23 @@ plot(m_r)
 # post-hoc test
 symbols <- cld(glht(m_r, linfct = mcp(treatment = "Tukey")),                      # get symbols representing significant difference between treatmens 
                decreasing = TRUE)$mcletters$Letters
-symbols
+symbols_d <- data.frame(treatment = names(symbols), sig_symb = symbols)       # store in a data frame
+
+
+
+# summary table -----------------------------------------------------------
+
+
+
+# get mean, se and N (number of observation)
+summary_d <- d %>% 
+  group_by(year, season, treatment) %>%                             # summarise for each group 
+  summarise_each(funs(Mean = mean, SE = se, N = get_n), total) %>%  # get mean, se and n
+  left_join(symbols_d, by = "treatment")                            # merge with posthoc result
+write.csv(summary_d, "Output/Tables/example_oneway_anova_result.csv",
+          row.names = FALSE)
+
+
+
+
+

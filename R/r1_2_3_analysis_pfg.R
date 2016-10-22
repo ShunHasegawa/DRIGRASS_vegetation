@@ -1,7 +1,6 @@
 summary(pfg_2016)
 
 
-
 # prepare df --------------------------------------------------------------
 
 pfg_2016_ed     <- filter(pfg_2016, treatment != "No.shelter")                    # remove no shelter
@@ -16,90 +15,11 @@ pfg_ed_w_contrh <- filter(pfg_2016_ed, season == "Winter" & herb == "Control")  
 
 
 
-# c3 ratios -------------------------------------------------------------
+# analysis ----------------------------------------------------------------
 
-
-# > summer ------------------------------------------------------------------
-
-
-# . test rain x herb ------------------------------------------------------
-
-range(pfg_by_rxh_s$c3ratio)
-boxplot(logit(c3ratio) ~ treatment * herb * year, data = pfg_by_rxh_s)
-create_trans_boxplot(c3ratio + 1 ~ treatment * herb * year, data = pfg_by_rxh_s)
-
-
-# use logig
-c3_by_rh_s_m1  <- lmer(logit(c3ratio) ~ treatment * herb * year + (1|plot),
-                       data = pfg_by_rxh_s)
-c3_by_rh_s_fin <- get_persim_lmer(c3_by_rh_s_m1, show.model.res = TRUE)
-Anova(c3_by_rh_s_fin, test.statistic = "F")
-plot(c3_by_rh_s_fin)
-qqnorm(resid(c3_by_rh_s_fin))
-qqline(resid(c3_by_rh_s_fin))
-    # no herb effect
-
-
-
-
-# . rainfall treatment ----------------------------------------------------
-
-
-# the above anlaysis showed no herb effect so use the complete dataset
-boxplot(logit(c3ratio) ~ treatment * year, data = pfg_ed_s)
-c3_s_m1    <- lmer(logit(c3ratio) ~ treatment * year + (1 | plot), data = pfg_ed_s)
-c3_s_m_fin <- get_persim_lmer(c3_s_m1)
-
-Anova(c3_s_m1, test.statistic = "F")
-plot(c3_s_m1)
-qqnorm(resid(c3_s_m1))
-qqline(resid(c3_s_m1))
-  # remove outliers
-rmv <- sort(resid(c3_s_m1), index.return = TRUE)$ix[1:5]
-c3_s_m2 <- update(c3_s_m1, subset = -rmv)
-c3_s_m_fin_2 <- get_persim_lmer(c3_s_m2)
-plot(c3_s_m_fin_2)
-qqnorm(resid(c3_s_m_fin_2))
-qqline(resid(c3_s_m_fin_2))
-Anova(c3_s_m_fin_2, test.statistic = "F")
-  # there seem to be significant interaction so keep interactive terms.
-c3_s_m_fin <- c3_s_m1 
-Anova(c3_s_m_fin, test.statistic = "F")
-
-
-
-
-# winter ------------------------------------------------------------------
-
-
-# . rain x herb --------------------------------------------------------------
-boxplot(logit(c3ratio) ~ treatment * herb * year, data = pfg_by_rxh_w)
-create_trans_boxplot(c3ratio ~ treatment * herb * year, data = pfg_by_rxh_w)
-c3_by_rh_w_m1  <- lmer(sqrt(c3ratio) ~ treatment * herb * year + (1|plot),
-                       data = pfg_by_rxh_w)
-c3_by_rh_w_fin <- get_persim_lmer(c3_by_rh_w_m1, show.model.res = TRUE)
-Anova(c3_by_rh_w_fin, test.statistic = "F")
-plot(c3_by_rh_w_fin)
-qqnorm(resid(c3_by_rh_w_fin))
-qqline(resid(c3_by_rh_w_fin))
-  # no herb effect
-
-
-
-
-
-# . rain ------------------------------------------------------------------
-
-# the above test showed no herb effect, so use the complete dataset
-boxplot(logit(c3ratio) ~ treatment * year, data = pfg_ed_w)
-create_trans_boxplot(c3ratio ~ treatment * year, data = pfg_ed_w)
-
-c3_w_m1    <- lmer(sqrt(c3ratio) ~ treatment * year + (1 | plot), data = pfg_ed_w)
-c3_w_m_fin <- get_persim_lmer(c3_w_m1)
-Anova(c3_w_m_fin, test.statistic = "F")
-plot(c3_w_m_fin)
-qqnorm(resid(c3_w_m_fin))
-qqline(resid(c3_w_m_fin))
+source("R/r1_2_3.1_c3prop.R")     # c3 ratios (c3 proportion); C3 plant / Total 
+source("R/r1_2_3.2_c34ratio.R")   # c34ratios; C3 plant / C4 grass
+source("R/r1_2_3.3_grassprop.R")  # Grass proportion; Grass / Total
 
 
 
@@ -107,26 +27,67 @@ qqline(resid(c3_w_m_fin))
 # figure ------------------------------------------------------------------
 
 
-# summary df
+## summary df
 summary_pfg <- pfg_2016_ed %>%
-  group_by(year, season, treatment) %>%
-  summarise_each(funs(M = mean, SE = se, N = get_n), c3ratio)
+  gather(key = variable, value = value, c3ratio, c34ratios, grprop) %>% 
+  group_by(year, season, treatment, variable) %>%
+  summarise_each(funs(M = mean, SE = se, N = get_n), value)
 
 
-# plot
-fig_c3r <- ggplot(summary_pfg, aes(x = year, y = M, fill = treatment)) +
-  facet_grid(. ~ season) +
-  labs(x = "Year", y = expression(C[3]~proportion)) +
+## plot
+pfg_figs <- dlply(summary_pfg, .(variable), function(x){
+  ggplot(x, aes(x = year, y = M, fill = treatment)) +
+    facet_grid(. ~ season) +
+    labs(x = "", y = "") +
+    
+    geom_bar(stat = "identity", position = position_dodge(.9)) +
+    geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .5, 
+                  position = position_dodge(.9), size = .4) +
+    science_theme +
+    theme(legend.position = "none")
+}
+)
+pfg_figs[[1]]
 
-  geom_bar(stat = "identity", position = position_dodge(.9)) +
-  geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .3, 
-                position = position_dodge(.9)) +
-  science_theme +
-  theme(legend.position = c(.1, .9),
-        legend.title    = element_blank())
-fig_c3r
 
-ggsavePP(filename = "Output/Figs/C3prop",plot = fig_c3r, width = 6, height = 4)
+## legend
+pfg_figs[[1]] <- pfg_figs[[1]] + 
+  theme(legend.position  = c(.15, .75),
+        legend.key.width = unit(.2, "inches"))
+
+## ylabs
+unique(summary_pfg$variable)
+pfg_figs[[1]] <- pfg_figs[[1]] + labs(x = "", y = expression(C[3]:C[4]~ratios))
+pfg_figs[[2]] <- pfg_figs[[2]] + labs(x = "", y = expression(C[3]~proportion))
+pfg_figs[[3]] <- pfg_figs[[3]] + labs(x = "Time", y = "Grass proportion")
+
+
+## remove xaxis tick labels from the top two plots
+for(i in 1:2){
+  pfg_figs[[i]] <- pfg_figs[[i]] + 
+    theme(axis.text.x = element_blank())
+}
+pfg_figs[[1]]
+
+
+## remove facet_grid label rom the bottom two plots
+for(i in 2:3){
+  pfg_figs[[i]] <- pfg_figs[[i]] + 
+    theme(strip.text.x = element_blank())
+}
+pfg_figs[[2]]
+
+
+## merge fig
+pfg_fig_merged <- rbind(ggplotGrob(pfg_figs[[1]]), 
+                        ggplotGrob(pfg_figs[[2]]),
+                        ggplotGrob(pfg_figs[[3]]),
+                        size = "last")
+grid.newpage()
+grid.draw(pfg_fig_merged)
+
+ggsavePP(filename = "Output/Figs/pfg_prop",plot = pfg_fig_merged, width = 6, height = 6)
+
 
 
 # # post-hoc test

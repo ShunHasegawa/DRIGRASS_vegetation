@@ -257,7 +257,13 @@ pfg_2016 <- ab_spp_biom %>%
   gather(spp, value, -plot, -year, -month, -season, -treatment, -herb) %>%   # reshape: gather sp coumns to rows
   left_join(sp_pfg, by = "spp") %>%                                          # merge with PFG df
   group_by(plot, year, month, season, treatment, herb) %>%                   # summarise for each plot
-  summarise(total   = sum(value),                                            # get total biomass
-            c3ratio = sum(value[pfg == "c3"]) / total,                       # get c3 ratio
-            c4grass = sum(value[pfg == "c4"])) %>%                           # get total c4 biomass
+  summarise(total     = sum(value),                                          # get total biomass
+            c3plant   = sum(value[pfg == "c3"]),                             # get total c3 biomass
+            c4grass   = sum(value[pfg == "c4"]),                             # get total c4 biomass
+            c3ratio   = c3plant / total,                                     # get c3 ratio (proportion)
+            c34ratios = c3plant / c4grass,                                   # get c3:c4 ratio
+            grass     = sum(value[form == "grass"]),                         # get total grass
+            forb      = sum(value[form == "forb"]),                          # get total forb
+            grprop    = grass / total,                                       # get grass propotion
+            grforatio = grass / forb) %>%                                    # get grass:forb ratios
   ungroup()                                                                  # remove grouping factors

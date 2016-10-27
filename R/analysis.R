@@ -13,7 +13,8 @@ summary(pfg_2016)     # df for plant functional groups (PFG)
 
 # summary table
 source("R/r1_1_create_summary_tbl.R")  # save as csv
-    # get_summary_excel()  # save as excel. This may take some time
+    ## Rung the function below to save as excel. This may take some time.
+    ## get_summary_excel()  
 
 # stat and figure
 theme_set(theme_bw())                                                 # set ggplot backgroud
@@ -29,7 +30,7 @@ source("R/r1_2_6_analysis_all_ow_anova.R")   # analysis for all measurements for
 source("R/r1_2_6_1_example_oneway_anova.R")  # show an example of one-way anova
  
 # figures
-source("R/r1_3_1_fig_starplot.R")  # starplot
+# source("R/r1_3_1_fig_starplot.R")  # starplot
 
 
 # save

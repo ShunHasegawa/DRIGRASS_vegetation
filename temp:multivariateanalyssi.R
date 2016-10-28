@@ -8,21 +8,25 @@ ab_spp_biom$id <- 1:nrow(ab_spp_biom)
 
 sp_summ_df <- ab_spp_biom %>% 
   filter(treatment != "No.shelter" & herb == "Control" & month == 4) %>% 
+  arrange(plot, year) %>% 
   select(one_of(spp_names[colSums(.[spp_names]) != 0]))
 
 sp_wint_df <- ab_spp_biom %>% 
   filter(treatment != "No.shelter" & herb == "Control" & month == 10) %>% 
+  arrange(plot, year) %>% 
   select(one_of(spp_names[colSums(.[spp_names]) != 0]))
 
 site_summ_df <- ab_spp_biom %>%
   filter(treatment != "No.shelter" & herb == "Control" & month == 4) %>% 
   select(-one_of(spp_names)) %>%
-  mutate(time = paste(year, month.abb[as.numeric(month)], sep = "-"))
+  mutate(time = paste(year, month.abb[as.numeric(month)], sep = "-")) %>% 
+  arrange(plot, year)
 
 site_wint_df <- ab_spp_biom %>%
   filter(treatment != "No.shelter" & herb == "Control"& month == 10) %>% 
   select(-one_of(spp_names)) %>%
-  mutate(time = paste(year, month.abb[as.numeric(month)], sep = "-"))
+  mutate(time = paste(year, month.abb[as.numeric(month)], sep = "-")) %>% 
+  arrange(plot, year)
 
 
 

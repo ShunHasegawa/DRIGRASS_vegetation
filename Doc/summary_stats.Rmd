@@ -14,6 +14,7 @@ library(ggplot2)
 library(grid)
 library(pander)
 library(plyr)
+library(dplyr)
 library(vegan)
 knitr::opts_chunk$set(echo = TRUE, fig.path='Figs/DRIGRASS_harvest_',
                       dev=c('pdf', 'png'), dpi = 600)
@@ -210,6 +211,31 @@ pander(summary_tbl, justify = "right", split.table = Inf, caption = "Results of 
 
 ```
 
+
+## Principal response curve
+
+```{r prc, echo=TRUE, results='markup', warning=FALSE, fig.height=4, fig.width=6.5}
+summer_df <- ab_spp_biom %>% 
+  filter(treatment != "No.shelter" & herb == "Control" & month == 4) %>% 
+  arrange(plot, year)
+
+spssum <- colSums(summer_df[spp_names])
+sp_summ_df <- summer_df[, spp_names[spssum != 0]]
+
+yearv <- factor(summer_df$year)
+treatv <- factor(summer_df$treatment)
+
+
+pc_df_s <- decostand(sp_summ_df, method = "hellinger")
+prc_smmr <- prc(pc_df_s, treatment = treatv, time = yearv) 
+plot(prc_smmr)
+contr <- how(within = Within(type = "series"),
+             plots  = Plots(strata = summer_df$plot, type = "free"),
+             nperm  = 999)
+anova(prc_smmr, permutations = contr)
+
+
+```
 
 
 <!-- ## Dominent species (>5% of total biomass) -->

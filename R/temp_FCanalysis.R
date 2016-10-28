@@ -1,8 +1,5 @@
-summary(ab_spp_biom)  # df for each spp
-names(ab_spp_biom)
-unique(ab_spp_biom$season)
-
-  
+library(mvabund)
+library(lattice)
 
 treat_d <- read.csv("Data/root_trait_smmry_bySpp.csv") %>% 
   gather(variable, value, -spp) %>% 
@@ -42,18 +39,9 @@ common_spp <- intersect(prsent_spp, trait_spp)
 
 
 sp_d <-  droplevels(sp_d_16apr[, common_spp])
-sp_d <- round(sp_d*10, 0)
-absum <- apply(sp_d > 0, 2, mean)
-sp_d <- sp_d[, absum > 0.3]
+sp_d <- round(sp_d*100, 0)
 tr_d <-  droplevels(treat_d[common_spp, ])
-tr_d <- tr_d[absum > 0.3, ]
 env_d <- droplevels(data.frame(sp_d_16apr[, "treatment"]))
-
-nrow(sp_d)
-nrow(env_d)
-
-library(mvabund)
-library(lattice)
 
 ft <- traitglm(sp_d, env_d, tr_d)
 plot(ft)
@@ -61,10 +49,13 @@ plot(ft, which = 2)
 ft$fourth.corner
 anova(ft)
 
-
 a        = max(abs(ft$fourth.corner))
 colort   = colorRampPalette(c("blue","white","red")) 
-plot.4th = levelplot(t(as.matrix(ft$fourth.corner)), xlab="Environmental Variables",
+
+mx <- as.matrix(ft$fourth.corner)
+colnames(mx) <- gsub("^.*[.][.]", "",colnames(mx))
+
+plot.4th = levelplot(t(mx), xlab="Environmental Variables",
                      ylab="Species traits", col.regions=colort(100), at=seq(-a, a, length=100),
                      scales = list( x= list(rot = 45)))
 print(plot.4th)

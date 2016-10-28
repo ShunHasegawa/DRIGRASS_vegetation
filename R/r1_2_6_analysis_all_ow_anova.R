@@ -5,8 +5,9 @@
 # store all relevant dfs in a list
 all_dfs <- list('total_biomass'  = ab_tot_biom,  
                  'diversity'     = div_2016, 
-                 'biomass_byPfg' = select(pfg_2016, -total, -c4grass))  # unnecessary columns are removed 
-
+                 'biomass_byPfg' = select(pfg_2016, plot, year, month, season,
+                                          treatment, herb, c34ratios, grprop))  # required columns are selected
+names(pfg_2016)
 
 # merge them
 all_merged <- Reduce(function(...){
@@ -18,19 +19,20 @@ all_merged <- Reduce(function(...){
 
 # transform data for anova
 all_merged_trfm <- all_merged %>% 
-  mutate(Dead    = log(Dead + 1),
-         live    = log(live),
-         total   = log(total),
-         H       = H,
-         S       = S,
-         J       = J,
-         c3ratio = logit(c3ratio)) %>% 
-  gather(variable, trfm_value, Dead, live, total, H, S, J, c3ratio)  # reshape df to a long format
+  mutate(Dead      = log(Dead + 1),                                            # dead biomass
+         live      = log(live),                                                # live biomass
+         total     = log(total),                                               # total biomass
+         H         = H,                                                        # diversity
+         S         = S,                                                        # evenness
+         J         = J,                                                        # species richness
+         c34ratios = log(c34ratios + .001),                                    # c3:c4 ratios
+         grprop    = asin(grprop)) %>%                                         # grass proportion relative to total abundance
+  gather(variable, trfm_value, Dead, live, total, H, S, J, c34ratios, grprop)  # reshape df to a long format
 
 
 # merge original and transformed data
 all_df <- all_merged %>% 
-  gather(variable, original_value, Dead, live, total, H, S, J, c3ratio) %>% 
+  gather(variable, original_value, Dead, live, total, H, S, J, c34ratios, grprop) %>% 
   left_join(all_merged_trfm, 
             by = c("plot", "year", "month","season", "treatment", "herb", "variable"))
 
@@ -57,6 +59,8 @@ all_df <- all_merged %>%
 
 all_ow_anova <- dlply(all_df, .(variable, season, year), function(x){
 
+  cat(paste("\n", unique(x$variable), unique(x$season), unique(x$year)))         
+  
   d <- x[complete.cases(x), ]                                                    # remove rows with NA
   
   
@@ -68,8 +72,8 @@ all_ow_anova <- dlply(all_df, .(variable, season, year), function(x){
   sig_terms <- row.names(anova_hxr)[anova_hxr$`Pr(>F)` <= 0.05 ]                 # identify significant terms
   
   
-  # prepare df for analysis on rainfall
-  cat(paste("\n", unique(x$variable), unique(x$season), unique(x$year)))         # print if there is a significant herb/rainxherb effect
+  # prepare df for analysis on rainfall and print if there is a significant
+  # herb/rainxherb effect
   if(grepl("herb", sig_terms)){
     cat("\n  Note: significant herb/herb:treatment effect!!\n  added herb plots were remved for the analysis on rainfall treatments...")
     d_r <- filter(d, herb == "Control")                                          # if there is a significant herb effect, only control-herb is used for the analysis on rainfall
@@ -83,7 +87,8 @@ all_ow_anova <- dlply(all_df, .(variable, season, year), function(x){
   model_rain <- lm(trfm_value ~ treatment, data = d_r)                           # anvoa
   anova_r    <- anova(model_rain)                                                # get anova results
   treat_p    <- anova_r$`Pr(>F)`[1]                                              # get P value for treatment
-  
+  treat_f    <- paste0("F(", anova_r$Df[1], ",", anova_r$Df[2], ")=",            # get F value and associated DFs
+                       round(anova_r$`F value`[1], 2)) 
   
   # post-hoc test when treatment was significant
   if(treat_p <= 0.05){
@@ -104,8 +109,9 @@ all_ow_anova <- dlply(all_df, .(variable, season, year), function(x){
     transmute(year, season, treatment,                                           # concatenate mean, se and symbols
               value = paste0(round(M, 2), "(", round(SE, 2), ")", symbols)) %>% 
     spread(treatment, value) %>%                                                 # turn df to a wide format
-    mutate(P = round(treat_p, 3)) %>%                                            # add P-value for treatment
-    select(year, season, P, everything())                                        # reorder columns
+    mutate(F = treat_f,                                                          # add F value for treatment
+           P = round(treat_p, 3)) %>%                                            # add P-value for treatment
+    select(year, season, F, P, everything())                                     # reorder columns
   
   
   l <- list('model' = model_rain, 'summary_tbl' = summary_tbl)                   # store the model and summary table in a list for output           
@@ -126,6 +132,9 @@ dev.off()
 
 # save sumamry table
 summary_tbl <- ldply(all_ow_anova, function(x) x$summary_tbl) %>% 
+  mutate(variable = factor(variable, 
+                           levels = c("live", "Dead", "total", "c34ratios", 
+                                      "grprop", "H", "J", "S"))) %>% 
   arrange(variable, season, year)
 write.csv(summary_tbl, "Output/Tables/Summary_all_anova_results.csv",
           row.names = FALSE)

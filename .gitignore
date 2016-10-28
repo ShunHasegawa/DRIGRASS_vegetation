@@ -6,3 +6,5 @@ Output/
 Data/
 *.html
 .DS_Store
+*.png
+*.pdf

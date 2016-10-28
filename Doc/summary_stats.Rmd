@@ -15,7 +15,8 @@ library(grid)
 library(pander)
 library(plyr)
 library(vegan)
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.path='Figs/DRIGRASS_harvest_',
+                      dev=c('pdf', 'png'), dpi = 600)
 load("../Output/Data/all_obj.RData")
 theme_set(theme_bw()) 
 
@@ -152,35 +153,59 @@ plot(lsmeans::lsmeans(s_w_m_fin, "year"), comparisons = TRUE)
 ```
 
 
+## Plant functional groups
 
 
-### C$_3$ ratios
-
-```{r c3_fig, echo=FALSE, fig.height=3, fig.width=6, results='hide'}
-fig_c3r
+```{r pfg_fig, echo=FALSE, fig.height=6.5, fig.width=6.5, results='hide'}
+grid.draw(pfg_fig_merged)
 ```
+
+### C3:C4 ratios
 
 
 #### Summer
-```{r c3_tbl_rxh, echo=FALSE, results='asis', fig.width=5, fig.height=6, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
-lmer_anova_tbl(c3_by_rh_s_fin, caption = "C3 propotion in summer for rainfall and herbivore treatments")
+```{r c34r_s_tbl, echo=FALSE, results='asis', fig.width=5, fig.height=6, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
+lmer_anova_tbl(c34r_by_rh_s_fin, caption = "C3:C4 ratios in summer for rainfall and herbivore treatments")
 
-lmer_anova_tbl(c3_s_m_fin, caption = "C3 propotion in summer for rainfall treatments")
-plot(lsmeans::lsmeans(c3_s_m_fin, by = "year",spec = "treatment"), comparisons = TRUE)
-```
-
-```{r c3_tbl_r, echo=FALSE, results='asis', fig.width=5, fig.height=5, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
-lmer_anova_tbl(c3_by_rh_w_fin, caption = "C3 propotion in winter for rainfall and herbivore treatments")
-
-lmer_anova_tbl(c3_w_m_fin, caption = "C3 propotion in winter for rainfall treatments")
-plot(lsmeans::lsmeans(c3_w_m_fin, by = "year",spec = "treatment"), comparisons = TRUE)
+lmer_anova_tbl(c34r_s_m_fin, caption = "C3:C4 ratios in summer for rainfall treatments")
+plot(lsmeans::lsmeans(c34r_s_m_fin, by = "year",spec = "treatment"), comparisons = TRUE)
 ```
 
 
-### One-way ANOVA for each harvest in each year
+#### Winter
+```{r c34r_w_tbl, echo=FALSE, results='asis', fig.width=5, fig.height=6, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
+lmer_anova_tbl(c34r_by_rh_w_fin, caption = "C3:C4 ratios in winter for rainfall and herbivore treatments")
+
+lmer_anova_tbl(c34r_w_m_fin, caption = "C3:C4 ratios in winter for rainfall treatments")
+plot(lsmeans::lsmeans(c34r_w_m_fin, by = "year",spec = "treatment"), comparisons = TRUE)
+```
+
+
+
+### Grass proportion
+
+#### Summer
+```{r grprop_s_tbl, echo=FALSE, results='asis', fig.width=5, fig.height=6, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
+lmer_anova_tbl(grprop_by_rh_s_fin, caption = "Grass proportion in summer for rainfall and herbivore treatments")
+
+lmer_anova_tbl(grprop_s_m_fin, caption = "Grass proportion in summer for rainfall treatments")
+```
+
+
+#### Winter
+```{r grprop_w_tbl, echo=FALSE, results='asis', fig.width=5, fig.height=6, fig.cap="Least square mean comparisons. Estimated mean ± 95%CI. There is a significant difference when arrows are not overlapped.", message=FALSE, fig.show='hold'}
+lmer_anova_tbl(grprop_by_rh_w_fin_2, caption = "Grass proportion in winter for rainfall and herbivore treatments")
+
+lmer_anova_tbl(grprop_w_m_fin, caption = "Grass proportion in winter for rainfall treatments")
+plot(lsmeans::lsmeans(grprop_w_m_fin, by = "year",spec = "treatment"), comparisons = TRUE)
+
+```
+
+
+## One-way ANOVA for each harvest in each year
 ```{r oneway_anova_tbl, echo=FALSE, results='asis', warning=FALSE}
-emphasize.strong.cells(cbind(which(summary_tbl[, 4] <= 0.05), 4))
-emphasize.italics.cols(4)
+emphasize.strong.cells(cbind(which(summary_tbl[, 5] <= 0.05), 5))
+emphasize.italics.cols(5)
 pander(summary_tbl, justify = "right", split.table = Inf, caption = "Results of one-way ANOVA and summary with mean±SE (n = 6 [control-herb] or 12[added- & control-herb]). Where there was a significant treatment effect at P < 0.05, post-hoc tests were performed. The results of post-hoc comparisons are shown by letters alongside parenthesis.")
 
 ```

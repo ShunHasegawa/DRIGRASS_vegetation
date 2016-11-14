@@ -55,10 +55,12 @@ all_df <- all_merged %>%
         # 2. summary table showing results of anova (P value for treatment), mean 
         # and SE for each treatment and associated significant characters that 
         # represent significant difference between treatment.
+        # 3. summary table of P values for each of treatment, herb and their
+        # interactions
 
 
 all_ow_anova <- dlply(all_df, .(variable, season, year), function(x){
-
+  
   cat(paste("\n", unique(x$variable), unique(x$season), unique(x$year)))         
   
   d <- x[complete.cases(x), ]                                                    # remove rows with NA
@@ -68,13 +70,13 @@ all_ow_anova <- dlply(all_df, .(variable, season, year), function(x){
   d_hxr     <- filter(d, treatment %in%  c("Reduced.frequency", "Ambient", 
                                            "Reduced"))                           # subset required treatment
   m_hxr     <- lm(trfm_value ~ treatment * herb, data = d_hxr)                   # anova 
-  anova_hxr <- Anova(m_hxr)                                                      # get anova results
-  sig_terms <- row.names(anova_hxr)[anova_hxr$`Pr(>F)` <= 0.05 ]                 # identify significant terms
+  anova_hxr <- tidy(Anova(m_hxr)) %>% # get anova results
+    filter(grepl("herb", term))    # extract terms for herb and treatment:herb
   
   
   # prepare df for analysis on rainfall and print if there is a significant
   # herb/rainxherb effect
-  if(grepl("herb", sig_terms)){
+  if(any(anova_hxr$p.value <= 0.05)){
     cat("\n  Note: significant herb/herb:treatment effect!!\n  added herb plots were remved for the analysis on rainfall treatments...")
     d_r <- filter(d, herb == "Control")                                          # if there is a significant herb effect, only control-herb is used for the analysis on rainfall
   } else {
@@ -85,10 +87,10 @@ all_ow_anova <- dlply(all_df, .(variable, season, year), function(x){
   
   # test Rain
   model_rain <- lm(trfm_value ~ treatment, data = d_r)                           # anvoa
-  anova_r    <- anova(model_rain)                                                # get anova results
-  treat_p    <- anova_r$`Pr(>F)`[1]                                              # get P value for treatment
-  treat_f    <- paste0("F(", anova_r$Df[1], ",", anova_r$Df[2], ")=",            # get F value and associated DFs
-                       round(anova_r$`F value`[1], 2)) 
+  anova_r    <- tidy(Anova(model_rain))                                          # get anova results
+  treat_p    <- anova_r$p.value[1]                                               # get P value for treatment
+  treat_f    <- paste0("F(", anova_r$df[1], ",", anova_r$df[2], ")=",            # get F value and associated DFs
+                       round(anova_r$statistic[1], 2)) 
   
   # post-hoc test when treatment was significant
   if(treat_p <= 0.05){
@@ -114,7 +116,14 @@ all_ow_anova <- dlply(all_df, .(variable, season, year), function(x){
     select(year, season, F, P, everything())                                     # reorder columns
   
   
-  l <- list('model' = model_rain, 'summary_tbl' = summary_tbl)                   # store the model and summary table in a list for output           
+  # summaty stats
+  summary_stats <- bind_rows(anova_r[1, ], anova_hxr) %>% 
+    select(term, p.value) %>% 
+    spread(term, p.value)
+  
+  
+  l <- list('model' = model_rain, 'summary_tbl' = summary_tbl,                    # store the model and summary table in a list for output
+            'summary_stats' = summary_stats)
   return(l)
 })
 
@@ -139,3 +148,20 @@ summary_tbl <- ldply(all_ow_anova, function(x) x$summary_tbl) %>%
 write.csv(summary_tbl, "Output/Tables/Summary_all_anova_results.csv",
           row.names = FALSE)
 
+
+# save summary stats table
+summary_stt_tbl <- ldply(all_ow_anova, function(x) x$summary_stats) %>%
+  gather(term, pval, herb, treatment, `treatment:herb`) %>% 
+  mutate(pval = ifelse(pval <= .05, as.character(get_star(pval, dagger = FALSE)), "ns"),                                               # change pvalues to start marks
+         term = recode_factor(term, treatment = "Rain", herb = "Herbivore",   # relabel and reorder factors
+                              `treatment:herb` = "RxH"),
+         SYT  = paste(season, year, term, sep = "_")) %>%
+  select(-season, -year, -term) %>% 
+  spread(SYT, pval) %>% 
+  mutate(variable = factor(variable, levels = c("live", "Dead", "total", "c34ratios", 
+                                                "grprop", "H", "J", "S"))) %>% 
+  arrange(variable)
+
+write.csv(summary_stt_tbl, "Output/Tables/report/Summary_all_anova_results_stt.csv",
+            row.names = FALSE)
+  

@@ -6,8 +6,8 @@ ab_biom_s        <- filter(ab_tot_biom_ed, season == "Summer")      # Test rainf
 ab_biom_w        <- filter(ab_tot_biom_ed, season == "Winter")      # Test rainfall; winter; complete dataset
 ab_biom_s_hcont  <- filter(ab_biom_s, herb == "Control")            # Test rainfall; summer; subset Control-herb. subset of data only with 'Control' herb. This will be used to test only rainfall treatments when herb has a significant effect
 ab_biom_w_hcont  <- filter(ab_biom_w, herb == "Control")            # Test rainfall; winter; subset Control-herb
-ab_biom_by_rxh_s <- filter(ab_biom_s, treatment %in% c("Pulsed.drought", "Ambient", "Drought"))  # Test rainfall x herb; summer
-ab_biom_by_rxh_w <- filter(ab_biom_w, treatment %in% c("Pulsed.drought", "Ambient", "Drought"))  # Test rainfall x herb; summer
+ab_biom_by_rxh_s <- filter(ab_biom_s, treatment %in% c("Reduced.frequency", "Ambient", "Reduced"))  # Test rainfall x herb; summer
+ab_biom_by_rxh_w <- filter(ab_biom_w, treatment %in% c("Reduced.frequency", "Ambient", "Reduced"))  # Test rainfall x herb; summer
   
 
 
@@ -367,8 +367,8 @@ ggsavePP(filename = "Output/Figs/biomass", plot = ab_biom_plot_merged,
 #   summarise_each(funs(M = mean, SE = se, N = get_n), value) %>% 
 #   left_join(biom_posthoc, by = c("treatment", "variable")) %>% 
 #   ungroup() %>% 
-#   mutate(treatment = factor(treatment, levels = c("Ambient", "Increased", "Drought", 
-#                                                   "Pulsed drought", "Seasonal")))
+#   mutate(treatment = factor(treatment, levels = c("Ambient", "Increased", "Reduced", 
+#                                                   "Reduced.frequency", "Summer.drought")))
 # 
 # 
 # # plot

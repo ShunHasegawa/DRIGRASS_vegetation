@@ -65,8 +65,8 @@ all_ow_anova <- dlply(all_df, .(variable, season, year), function(x){
   
   
   # test Rain x Herb
-  d_hxr     <- filter(d, treatment %in%  c("Pulsed.drought", "Ambient", 
-                                           "Drought"))                           # subset required treatment
+  d_hxr     <- filter(d, treatment %in%  c("Reduced.frequency", "Ambient", 
+                                           "Reduced"))                           # subset required treatment
   m_hxr     <- lm(trfm_value ~ treatment * herb, data = d_hxr)                   # anova 
   anova_hxr <- Anova(m_hxr)                                                      # get anova results
   sig_terms <- row.names(anova_hxr)[anova_hxr$`Pr(>F)` <= 0.05 ]                 # identify significant terms

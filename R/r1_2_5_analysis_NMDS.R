@@ -9,8 +9,8 @@ vegmatrixtreat <- sp_biom_2016 %>%
   filter(herb == "Ambient" & treatment != "Ambient(no shelter)") %>% 
   droplevels(.) %>% 
   mutate(treatment = factor(treatment, 
-                            levels = c("Ambient", "Increased", "Drought", 
-                                       "Pulsed drought", "Seasonal"),
+                            levels = c("Ambient", "Increased", "Reduced", 
+                                       "Reduced.frequency", "Summer.drought"),
                             labels = c("Ambient", "Increased(+50%)", 
                                        "Reduced(-50%)","Reduced frequency", 
                                        "Summer drought")))
@@ -89,7 +89,7 @@ dev.off()
 
 # prepare df
 sp_by_rxh <- sp_biom_2016 %>% 
-  filter(treatment %in% c("Pulsed drought", "Ambient", "Drought")) %>% 
+  filter(treatment %in% c("Reduced.frequency", "Ambient", "Reduced")) %>% 
   droplevels(.)
 
 # remov sppeceis with no observations

@@ -4,8 +4,8 @@ div_2016_ed         <- filter(div_2016, treatment != "No.shelter")  # remove she
 div_2016_ed_s       <- filter(div_2016_ed, season == "Summer")      # test Rainfall; summer; complete dataset
 div_2016_ed_w       <- filter(div_2016_ed, season == "Winter")      # test Rainfall; winter; complete dataset
 div_2016_ed_s_hcont <- filter(div_2016_ed_s, herb == "Control")     # test Rainfall; summer; contrl-herb. subset of data only with 'Control' herb. This will be used to test only rainfall treatments when herb has a significant effect
-div_2016_by_rxh_s   <- filter(div_2016_ed_s, treatment %in% c("Pulsed.drought", "Ambient", "Drought"))  # test Rainfall x Herb; summer; subset rainfall treatments
-div_2016_by_rxh_w   <- filter(div_2016_ed_w, treatment %in% c("Pulsed.drought", "Ambient", "Drought"))  # test Rainfall x Herb: winter
+div_2016_by_rxh_s   <- filter(div_2016_ed_s, treatment %in% c("Reduced.frequency", "Ambient", "Reduced"))  # test Rainfall x Herb; summer; subset rainfall treatments
+div_2016_by_rxh_w   <- filter(div_2016_ed_w, treatment %in% c("Reduced.frequency", "Ambient", "Reduced"))  # test Rainfall x Herb: winter
 
 
 
@@ -325,8 +325,8 @@ ggsavePP(filename = "Output/Figs/diversity_ind", plot = div_plot_merged,
 #   summarise_each(funs(M = mean, SE = se, N = get_n), value) %>%
 #   left_join(div_posthoc, by = c("treatment", "variable")) %>%
 #   ungroup() %>%
-#   mutate(treatment = factor(treatment, levels = c("Ambient", "Increased", "Drought",
-#                                                   "Pulsed drought", "Seasonal")))
+#   mutate(treatment = factor(treatment, levels = c("Ambient", "Increased", "Reduced",
+#                                                   "Reduced.frequency", "Summer.drought")))
 # 
 # 
 # # plot

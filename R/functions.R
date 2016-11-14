@@ -29,13 +29,26 @@ add.factors <- function(x){
 
 
 # compute SE
-se <- function(...) ci(...)[4]
+se <- function(...){
+  ci(...)[4]
+}
 
 
 
 
 # compute number of observations
-get_n <- function(x) sum(!is.na(x))
+get_n <- function(x){
+  sum(!is.na(x))
+}
+
+
+
+# this returns Mean(SE)
+get_mean_se <- function(x, round.val = 2, ...){
+  M  <- round(mean(x, ...), round.val)  # mean
+  SE <- round(se(x, ...), round.val)    # SE
+  paste0(M, "(", SE, ")")
+}
 
 
 
@@ -105,6 +118,21 @@ combine_cols <- function(.data, KeepCol, CombineCol){
 
 
 
+
+# this transforms P values to star maks
+get_star <- function(pval, dagger = TRUE){
+  
+  # dagger mark for p < 0.1
+  dg <- ifelse(dagger, expression("\u2020"), ".")
+  
+  cut(pval, right = FALSE,
+      breaks = c(0, .1, .05, .01, .001, 1.1),  
+      labels = c("***", "**", "*", dg, ""))
+}
+
+
+
+
 # set graphic parameters --------------------------------------------------
 
 
@@ -150,3 +178,4 @@ get_persim_lmer <- function(lmermod, show.model.res = FALSE){
   fin_m     <- update(fin_m, REML = TRUE)                             # switch the estimate back to REML from ML
   return(fin_m)
 }
+

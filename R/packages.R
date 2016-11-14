@@ -15,3 +15,4 @@ library(lme4)         # run LMM analysis using lmer
 library(grid)         # bind ggplots
 library(lmerTest)     # F test for lmer objects
 library(MuMIn)        # find a model with the lowest AICc
+library(broom)        # export an anova object as a data frame

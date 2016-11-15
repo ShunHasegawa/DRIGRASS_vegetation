@@ -98,6 +98,29 @@ grid.draw(pfg_fig_merged)
 
 
 
+
+## MDS analysis
+
+```{r Fig4a, echo=FALSE, fig.height=4, fig.width=6.5, results='hide', fig.cap="MDS for summer harvests"}
+fig_pcoa_summer
+```
+
+```{r Fig4b, echo=FALSE, fig.height=4, fig.width=4.3, results='hide', fig.cap="MDS for winter harvests"}
+fig_PCoA_winter
+```
+
+
+
+
+## Principal response curve (PRC)
+
+```{r Fig5, echo=FALSE, fig.height = 4, fig.width=6, results='asis', fig.cap="PRC for summer harvests"}
+get_prc_fig()
+```
+
+
+
+
 ## One-way ANOVA for each harvest in each year
 ```{r oneway_anova_tbl, echo=FALSE, results='asis', warning=FALSE}
 emphasize.strong.cells(cbind(which(summary_tbl[, 5] <= 0.05), 5))
@@ -105,4 +128,3 @@ emphasize.italics.cols(5)
 pander(summary_tbl, justify = "right", split.table = Inf, caption = "Results of one-way ANOVA and summary with mean±SE (n = 6 [control-herb] or 12[added- & control-herb]). Where there was a significant treatment effect at P < 0.05, post-hoc tests were performed. The results of post-hoc comparisons are shown by letters alongside parenthesis.")
 
 ```
-

@@ -7,15 +7,16 @@ all_dfs <- list('total_biomass'  = ab_tot_biom,
                  'diversity'     = div_2016, 
                  'biomass_byPfg' = select(pfg_2016, plot, year, month, season,
                                           treatment, herb, c34ratios, grprop))  # required columns are selected
-names(pfg_2016)
+
 
 # merge them
 all_merged <- Reduce(function(...){
-  merge(..., by = c("plot", "year", "month","season", "treatment", "herb"))
+  merge(..., by = c("plot", "year", "month","season", "treatment", "herb"), 
+        all.x = TRUE)
         },
   all_dfs) %>% 
-  filter(treatment != "No.shelter")                                          # remove no-sheltered treatment
-
+  filter(treatment != "No.shelter")                                            # remove no-sheltered treatment
+  
 
 # transform data for anova
 all_merged_trfm <- all_merged %>% 
@@ -32,12 +33,13 @@ all_merged_trfm <- all_merged %>%
 
 # merge original and transformed data
 all_df <- all_merged %>% 
-  gather(variable, original_value, Dead, live, total, H, S, J, c34ratios, grprop) %>% 
+  gather(variable, original_value, Dead, live, total, H, S, J, c34ratios, grprop) %>%
+  filter(!is.na(original_value)) %>% 
   left_join(all_merged_trfm, 
-            by = c("plot", "year", "month","season", "treatment", "herb", "variable"))
+            by = c("plot", "year", "month","season", "treatment", "herb", "variable")) 
 
 
-  
+
 
 # analysis ----------------------------------------------------------------
 
@@ -123,7 +125,7 @@ all_ow_anova <- dlply(all_df, .(variable, season, year), function(x){
   
   
   l <- list('model' = model_rain, 'summary_tbl' = summary_tbl,                    # store the model and summary table in a list for output
-            'summary_stats' = summary_stats)
+            'summary_stats' = summary_stats, 'summary_posthoc' = symbol_d)
   return(l)
 })
 
@@ -147,6 +149,10 @@ summary_tbl <- ldply(all_ow_anova, function(x) x$summary_tbl) %>%
   arrange(variable, season, year)
 write.csv(summary_tbl, "Output/Tables/Summary_all_anova_results.csv",
           row.names = FALSE)
+
+
+# result of posthoc test 
+anv_psthc_rslt <- ldply(all_ow_anova, function(x) x$summary_posthoc)
 
 
 # save summary stats table

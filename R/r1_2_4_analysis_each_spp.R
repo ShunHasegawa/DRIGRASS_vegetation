@@ -24,7 +24,7 @@ sp_biom_2016_ed <- sp_biom_2016 %>%
 # df to test rain x herb
 
 sp_biom_by_rxh <- sp_biom_2016_ed %>% 
-  filter(treatment %in% c("Reduced.frequency", "Ambient", "Reduced")) %>% 
+  filter(treatment %in% c("Reduced frequency", "Ambient", "Reduced")) %>% 
   droplevels(.)
 
 summary(sp_biom_by_rxh)
@@ -115,7 +115,7 @@ summary_spp <- sp_biom_2016_ed %>%
   left_join(spp_posthoc, by = c("treatment", "variable")) %>% 
   ungroup() %>% 
   mutate(treatment = factor(treatment, levels = c("Ambient", "Increased", "Reduced", 
-                                                  "Reduced.frequency", "Summer.drought")),
+                                                  "Reduced frequency", "Summer drought")),
          variable  = gsub("[.]", " ", as.character(variable))) %>% 
   arrange(variable)
 

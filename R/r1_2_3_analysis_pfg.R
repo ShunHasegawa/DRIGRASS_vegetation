@@ -4,8 +4,8 @@ summary(pfg_2016)
 # prepare df --------------------------------------------------------------
 
 pfg_2016_ed     <- filter(pfg_2016, treatment != "No.shelter")                    # remove no shelter
-pfg_by_rxh_s    <- filter(pfg_2016_ed, season == "Summer" & treatment %in% c("Reduced.frequency", "Ambient", "Reduced"))  # test rainfall x herb; summer
-pfg_by_rxh_w    <- filter(pfg_2016_ed, season == "Winter" & treatment %in% c("Reduced.frequency", "Ambient", "Reduced"))  # test rainfall x herb; winter
+pfg_by_rxh_s    <- filter(pfg_2016_ed, season == "Summer" & treatment %in% c("Reduced frequency", "Ambient", "Reduced"))  # test rainfall x herb; summer
+pfg_by_rxh_w    <- filter(pfg_2016_ed, season == "Winter" & treatment %in% c("Reduced frequency", "Ambient", "Reduced"))  # test rainfall x herb; winter
 pfg_ed_s        <- filter(pfg_2016_ed, season == "Summer")                        # test rainfall; summer; complete dataset
 pfg_ed_w        <- filter(pfg_2016_ed, season == "Winter")                        # test rainfall; winter; complete dataset
 pfg_ed_s_contrh <- filter(pfg_2016_ed, season == "Summer" & herb == "Control")    # test rainfall; summer; subset control-herb
@@ -105,7 +105,7 @@ ggsavePP(filename = "Output/Figs/pfg_prop",plot = pfg_fig_merged, width = 6, hei
 #   left_join(c3r_posthoc, by = "treatment") %>% 
 #   ungroup() %>% 
 #   mutate(treatment = factor(treatment, levels = c("Ambient", "Increased", "Reduced", 
-#                                                   "Reduced.frequency", "Summer.drought")))
+#                                                   "Reduced frequency", "Summer drought")))
 # 
 # 
 # # plot

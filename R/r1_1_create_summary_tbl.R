@@ -107,7 +107,7 @@ l_ply(names(summary_by_herb_list), function(x)
 # create a table
 summary_by_herb_list_rep <- ldply(all_list, function(x){
   x %>% 
-    filter(treatment %in% c("Reduced.frequency", "Ambient", "Reduced")) %>% 
+    filter(treatment %in% c("Reduced frequency", "Ambient", "Reduced")) %>% 
     select(-plot, -treatment, -month) %>%
     gather(variable, value, -year, -season, -herb) %>%
     group_by(year, season, herb, variable) %>%
@@ -169,7 +169,7 @@ l_ply(names(summary_by_rxh_list), function(x)
 # create a table
 summary_by_rh_list_rep <- ldply(all_list, function(x){
   x %>% 
-    filter(treatment %in% c("Reduced.frequency", "Ambient", "Reduced")) %>% 
+    filter(treatment %in% c("Reduced frequency", "Ambient", "Reduced")) %>% 
     select(-plot, -month) %>%
     gather(variable, value, -year, -season, -treatment, -herb) %>%
     group_by(year, season, treatment, herb, variable) %>%
@@ -178,7 +178,7 @@ summary_by_rh_list_rep <- ldply(all_list, function(x){
     mutate(RH = factor(treatment:herb, 
                        levels = c("Ambient:Control", "Ambient:Added",
                                   "Reduced:Control", "Reduced:Added",
-                                  "Reduced.frequency:Control", "Reduced.frequency:Added"))) %>% 
+                                  "Reduced frequency:Control", "Reduced frequency:Added"))) %>% 
     select(-treatment, -herb) %>% 
     spread(RH, value)
 }) %>% 

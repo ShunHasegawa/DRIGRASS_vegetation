@@ -17,7 +17,7 @@ d$live    <- d$total - d$Dead                                                   
 
 # . test Rain x Herb -----------------------------------------------------------
 
-d_rxh <- subset(d, treatment %in% c("Reduced.frequency", "Ambient", "Reduced"))
+d_rxh <- subset(d, treatment %in% c("Reduced frequency", "Ambient", "Reduced"))
                     
 create_trans_boxplot(total ~ treatment * herb, data = d_rxh)  # data visualisation                    
 m_rxh <- lm(total ~ treatment * herb, data = d_rxh)           # anova model

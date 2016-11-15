@@ -38,7 +38,7 @@ site_wint_df <- ab_spp_biom %>%
 # . summer ------------------------------------------------------------------
 
 
-pc_df <- decostand(sp_summ_df, method = "hellinger")
+pc_df <- decostand(sp_summ_df, method = "log")
 PCoA_summ <- cmdscale(d = vegdist(pc_df, method = "bray"), eig = TRUE, k = 3)
 summary(PCoA_summ)
 colnames(PCoA_summ$points) <- paste0("PCoA", 1:ncol(PCoA_summ$points))
@@ -79,7 +79,7 @@ ggsavePP(filename = "Output/Figs/PCoA_contherb_summer", width = 6.5, height  = 4
 # . winter ------------------------------------------------------------------
 
 
-pc_df_wint <- decostand(sp_wint_df, method = "hellinger")
+pc_df_wint <- decostand(sp_wint_df, method = "log")
 PCoA_wint <- cmdscale(d = vegdist(pc_df_wint, method = "bray"), eig = TRUE, k = 3)
 summary(PCoA_wint)
 colnames(PCoA_wint$points) <- paste0("PCoA", 1:ncol(PCoA_wint$points))

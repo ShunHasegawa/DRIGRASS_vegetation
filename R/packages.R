@@ -16,3 +16,6 @@ library(grid)         # bind ggplots
 library(lmerTest)     # F test for lmer objects
 library(MuMIn)        # find a model with the lowest AICc
 library(broom)        # export an anova object as a data frame
+library(parallel)     # set up multicores to run permutaion quickly using parallel processing
+library(foreach)      # set up multicores to run permutaion quickly using parallel processing
+library(doParallel)   # set up multicores to run permutaion quickly using parallel processing

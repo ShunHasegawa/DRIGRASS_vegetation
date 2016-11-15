@@ -157,7 +157,8 @@ science_theme <- theme(panel.border      = element_rect(color = "black"),
                        axis.text.y       = element_text(margin = margin(0, 5),
                                                         size = 8),
                        axis.title.y      = element_text(margin = margin(0, 10),
-                                                        size = 10))
+                                                        size = 10),
+                       axis.title.x      = element_text(size = 10))
 
 
 

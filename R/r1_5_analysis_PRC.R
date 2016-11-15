@@ -46,7 +46,7 @@ prc_spp <- prc_smmr_res$species
 range(prc_spp[, 1])
 
 get_prc_fig <- function(){
-  par(mai = c(1, .8, .8, 2))
+  par(mai = c(1, .8, .2, 1.5))
   plot(eff ~ as.numeric(year), data = effect_d, ylim = c(-1.6, 1.6), 
        axes = F, xlab = "Year", ylab = "Effect", type = "n")
   axis(side = 1, at = c(1, 2, 3), labels = 2014:2016)

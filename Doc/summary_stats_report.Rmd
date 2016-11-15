@@ -1,0 +1,108 @@
+---
+title: "DRIGRASS -Summary stats for report-"
+author: "Shun Hasegawa"
+date: "17 October 2016"
+output:
+  html_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+library(car)
+library(lmerTest)
+library(ggplot2)
+library(grid)
+library(pander)
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(vegan)
+# knitr::opts_chunk$set(echo = TRUE, fig.path='Figs_report/DRIGRASS_harvest_',
+#                       dev=c('pdf', 'png'), dpi = 600)
+knitr::opts_chunk$set(echo = TRUE)
+load("../Output/Data/all_obj.RData")
+theme_set(theme_bw()) 
+
+
+# function to generate anova table from lmer
+lmer_anova_tbl <- function(lmermod, ...){
+  a <- Anova(lmermod, test.statistic = "F")
+  panderOptions('round', c(2, 0, 0, 3))
+  if(any(a[, 4] <= 0.05)) emphasize.strong.cells(cbind(which(a[, 4] <= 0.05), 4))
+  emphasize.italics.cols(4)
+  pander(a,  justify = "right", ...)
+}
+
+```
+
+
+
+## Introduction
+
+
+## Summary stats
+
+
+```{r smmry_stat_tbl, echo=FALSE, results='asis'}
+sst <- ldply(all_ow_anova, function(x) x$summary_stats) %>%
+  gather(term, pval, herb, treatment, `treatment:herb`) %>% 
+  mutate(pval = ifelse(pval <= .05, as.character(get_star(pval, dagger = FALSE)), "ns"),
+         term = recode_factor(term, treatment = "Rain", herb = "Herb", `treatment:herb` = "RxH"),
+         SYT  = paste(year, term, sep = "\n")) %>%
+  select(-year, -term) %>% 
+  spread(SYT, pval) %>% 
+  mutate(variable = factor(variable, levels = c("live", "Dead", "total", "c34ratios", 
+                                                "grprop", "H", "J", "S"))) %>% 
+  arrange(variable)
+
+sst_summer <- sst %>% 
+  filter(season == "Summer") %>% 
+  select(-season) %>% 
+  .[!apply(., 2, function(x) all(is.na(x)))]
+
+sst_winter <- sst %>% 
+  filter(season == "Winter") %>% 
+  select(-season) %>% 
+  .[!apply(., 2, function(x) all(is.na(x)))]
+
+
+pander(sst_summer, split.cell = 2, split.table = Inf, caption = "Summary stats for summer harvests")
+pander(sst_winter, split.cell = 2, split.table = Inf, caption = "Summary stats for winter harvests")
+
+```
+
+
+
+## Biomass (Total/Live/Dead)
+
+```{r Fig1, echo=FALSE, fig.height=6.5, fig.width=6.5, results='hide'}
+grid.draw(ab_biom_plot_merged)
+```
+
+
+
+
+## Diversity indices
+
+```{r Fig2, echo=FALSE, fig.height=6.5, fig.width=6.5, results='hide'}
+grid.draw(div_plot_merged)
+```
+
+
+## Plant functional groups
+
+
+```{r Fig3, echo=FALSE, fig.height=6.5, fig.width=6.5, results='hide'}
+grid.draw(pfg_fig_merged)
+```
+
+
+
+## One-way ANOVA for each harvest in each year
+```{r oneway_anova_tbl, echo=FALSE, results='asis', warning=FALSE}
+emphasize.strong.cells(cbind(which(summary_tbl[, 5] <= 0.05), 5))
+emphasize.italics.cols(5)
+pander(summary_tbl, justify = "right", split.table = Inf, caption = "Results of one-way ANOVA and summary with mean±SE (n = 6 [control-herb] or 12[added- & control-herb]). Where there was a significant treatment effect at P < 0.05, post-hoc tests were performed. The results of post-hoc comparisons are shown by letters alongside parenthesis.")
+
+```
+

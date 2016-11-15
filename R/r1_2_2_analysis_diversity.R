@@ -233,20 +233,24 @@ summary_div <- div_2016 %>%
   mutate(month = as.numeric(as.character(month))) %>%             # change month from factor to numeric
   gather(key = variable, value = value, H, S, J) %>%              # reshape df to "long" format
   group_by(year, season, treatment, variable) %>%                 # summary for each group
-  summarise_each(funs(M = mean, SE = se, N = get_n), value)       # get mean, SE, sample size for each group
-
+  summarise_each(funs(M = mean, SE = se, N = get_n), value) %>%   # get mean, SE, sample size for each group
+  left_join(anv_psthc_rslt, by = c("year", "season", "treatment", "variable"))
 
 # create figures
 fig_div <- dlply(summary_div, .(variable), function(x){
   ggplot(data = x, aes(x = year, y = M, fill = treatment)) +      # change fill colors by treatment
     labs(x = "Year") +                                            # label for x axis
-    facet_grid(. ~ season) +
+    facet_grid(. ~ season, scales = "free_x", space = "free_x") +
                                                                   # make a main plot
     geom_bar(stat = "identity", position = position_dodge(.9)) +  # create bargrph. Each bar is placed next to each other
     geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .5,  # add error bars
                   position = position_dodge(.9), size = .4) +  
+    geom_text(aes(y = M + SE, label = symbols), position = position_dodge(.9),
+              vjust = -.4, size = 2) +
+    
                                                                   # set figure formatting  
     science_theme +
+    scale_fill_manual(values = rain_cols) +
     theme(legend.position  = "none")                              # remove legend
 })
 fig_div[[1]]
@@ -254,8 +258,7 @@ fig_div[[1]]
 
 # add legend
 fig_div[[1]] <- fig_div[[1]] + 
-  theme(legend.position  = c(.85, .75),
-        legend.key.width = unit(.2, "inches"))
+  theme(legend.position  = "top")
 fig_div[[1]]
 
 # edit y labels
@@ -298,66 +301,3 @@ grid.draw(div_plot_merged)
 # save
 ggsavePP(filename = "Output/Figs/diversity_ind", plot = div_plot_merged,
          width = 6.5, height = 6.5)
-
-
-
-# 
-# div_m_list <- list(H = h_m1, S = s_m1)
-# 
-# 
-# # post-hoc test
-# div_posthoc <- ldply(div_m_list, function(x) {
-# 
-#   # symbols to be used for figures given by post-hoc test
-#   symbols <- cld(glht(x, linfct = mcp(treatment = "Tukey")), decreasing = TRUE)$mcletters$Letters
-#   d <- data.frame(treatment = names(symbols), symbols, row.names = NULL)
-#   d$symbols <- as.character(d$symbols)
-#   return(d)
-# },
-# .id = "variable")
-# 
-# 
-# # summary df
-# summary_div <- div_2016_ed %>%
-#   select(-J) %>%
-#   gather(variable, value, H, S) %>%
-#   group_by(treatment, variable) %>%
-#   summarise_each(funs(M = mean, SE = se, N = get_n), value) %>%
-#   left_join(div_posthoc, by = c("treatment", "variable")) %>%
-#   ungroup() %>%
-#   mutate(treatment = factor(treatment, levels = c("Ambient", "Increased", "Reduced",
-#                                                   "Reduced frequency", "Summer drought")))
-# 
-# 
-# # plot
-# div_fig_list <- dlply(summary_div, .(variable), function(x){
-#   p <- ggplot(x, aes(x = treatment, y = M, fill = treatment)) +
-#     labs(x = NULL) +
-# 
-#     geom_bar(stat = "identity", col = "black") +
-#     geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .3) +
-#     geom_text(aes(y = M + SE, label = symbols), vjust = -.4) +
-# 
-#     scale_x_discrete(labels = c("Ambient", "Increased\n(+50%)", "Reduced\n(-50%)",
-#                                 "Reduced\nfrequency", "Summer\ndrought")) +
-#     scale_fill_manual(values = rain_cols) +
-# 
-#     theme(legend.position = "none",
-#           panel.border      = element_rect(color = "black"),
-#           panel.grid.major  = element_blank(),
-#           panel.grid.minor  = element_blank())
-# 
-#   return(p)
-# })
-# 
-# 
-# # edit y labels
-# div_fig_list[[1]] <- div_fig_list[[1]] + labs(y = expression(Diversity~(italic("H'"))))
-# div_fig_list[[2]] <- div_fig_list[[2]] + labs(y = "Species richness")
-# 
-# 
-# # save
-# l_ply(names(div_fig_list), function(x){
-#   ggsavePP(filename = paste0("Output/Figs/", x, "_2016"),
-#            plot = div_fig_list[[x]], width = 6, height = 4)
-# })

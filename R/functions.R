@@ -148,12 +148,16 @@ science_theme <- theme(panel.border      = element_rect(color = "black"),
                        legend.title      = element_blank(),
                        legend.background = element_blank(),
                        legend.key        = element_blank(),
-                       legend.key.width  = unit(2.5, "lines"),
+                       legend.text  = element_text(size = 8),
+                       legend.key.width  = unit(1, "lines"),
                        legend.key.height = unit(.8, "lines"),
                        axis.ticks.length = unit(-.2, "lines"),
-                       axis.text.x       = element_text(margin = margin(5)),
-                       axis.text.y       = element_text(margin = margin(0, 5)),
-                       axis.title.y      = element_text(margin = margin(0, 10)))
+                       axis.text.x       = element_text(margin = margin(5),
+                                                        size = 8),
+                       axis.text.y       = element_text(margin = margin(0, 5),
+                                                        size = 8),
+                       axis.title.y      = element_text(margin = margin(0, 10),
+                                                        size = 10))
 
 
 

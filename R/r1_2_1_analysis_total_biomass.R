@@ -286,14 +286,14 @@ head(anv_psthc_rslt)
 # create plots
 fig_ab_biom <- dlply(summary_ab_biom, .(variable), function(x){
   ggplot(data = x, aes(x = year, y = M, fill = treatment)) +
-    facet_grid(. ~ season) +
+    facet_grid(. ~ season, scales = "free_x", space = "free_x") +
     labs(x = "Year") +
     
     geom_bar(stat = "identity", position = position_dodge(.9)) +
     geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .5,
                   position = position_dodge(.9), size = .4) +
     geom_text(aes(y = M + SE, label = symbols), position = position_dodge(.9),
-              vjust = -.4) +
+              vjust = -.4, size = 2) +
     
     science_theme +
     theme(legend.position  = "none") +
@@ -308,9 +308,7 @@ fig_ab_biom[[2]] <- fig_ab_biom[[2]] + ylim(0, 300)
 
 # add legend
 fig_ab_biom[[1]] <- fig_ab_biom[[1]] + 
-  guides(fill = guide_legend(nrow = 3)) +
-  theme(legend.position  = c(.8, .85),
-        legend.key.width = unit(.2, "inches"))
+  theme(legend.position  = "top")
 fig_ab_biom[[1]]
 
 

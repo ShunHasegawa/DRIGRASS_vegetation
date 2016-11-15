@@ -29,104 +29,64 @@ source("R/r1_2_3.3_grassprop.R")  # Grass proportion; Grass / Total
 
 ## summary df
 summary_pfg <- pfg_2016_ed %>%
-  gather(key = variable, value = value, c3ratio, c34ratios, grprop) %>% 
+  gather(key = variable, value = value, c34ratios, grprop) %>% 
   group_by(year, season, treatment, variable) %>%
-  summarise_each(funs(M = mean, SE = se, N = get_n), value)
+  summarise_each(funs(M = mean, SE = se, N = get_n), value) %>% 
+  left_join(anv_psthc_rslt, by = c("year", "season", "treatment", "variable"))
 
 
 ## plot
 pfg_figs <- dlply(summary_pfg, .(variable), function(x){
   ggplot(x, aes(x = year, y = M, fill = treatment)) +
-    facet_grid(. ~ season) +
+    facet_wrap( ~ season, scales = "free") +
     labs(x = "", y = "") +
     
     geom_bar(stat = "identity", position = position_dodge(.9)) +
     geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .5, 
                   position = position_dodge(.9), size = .4) +
+    geom_text(aes(y = M + SE, label = symbols), position = position_dodge(.9),
+              vjust = -.4, size = 2) +
+    geom_blank(aes(y = (M + SE) * 1.03)) +  # adjust ymax so that symbols above error bars are placed wihtin a plot
+    
+    scale_fill_manual(values = rain_cols)+
     science_theme +
     theme(legend.position = "none")
-}
-)
+})
 pfg_figs[[1]]
 
 
 ## legend
 pfg_figs[[1]] <- pfg_figs[[1]] + 
-  theme(legend.position  = c(.15, .75),
-        legend.key.width = unit(.2, "inches"))
+  theme(legend.position  = "top")
+
+
+## ylim
+pfg_figs[[2]] <- pfg_figs[[2]] + ylim(0, 1)
+
 
 ## ylabs
 unique(summary_pfg$variable)
-pfg_figs[[1]] <- pfg_figs[[1]] + labs(x = "", y = expression(C[3]:C[4]~ratios))
-pfg_figs[[2]] <- pfg_figs[[2]] + labs(x = "", y = expression(C[3]~proportion))
-pfg_figs[[3]] <- pfg_figs[[3]] + labs(x = "Time", y = "Grass proportion")
+pfg_figs[[1]] <- pfg_figs[[1]] + labs(x = NULL, y = expression(C[3]:C[4]~ratios))
+pfg_figs[[2]] <- pfg_figs[[2]] + labs(x = "Year", y = "Grass proportion")
 
 
-## remove xaxis tick labels from the top two plots
-for(i in 1:2){
-  pfg_figs[[i]] <- pfg_figs[[i]] + 
-    theme(axis.text.x = element_blank())
-}
+## remove xaxis tick labels from the top plot
+pfg_figs[[1]] <- pfg_figs[[1]] + theme(axis.text.x = element_blank())
 pfg_figs[[1]]
 
 
-## remove facet_grid label rom the bottom two plots
-for(i in 2:3){
-  pfg_figs[[i]] <- pfg_figs[[i]] + 
-    theme(strip.text.x = element_blank())
-}
+## remove facet_wrap label rom the bottom plot
+pfg_figs[[2]] <- pfg_figs[[2]] + theme(strip.text.x = element_blank())
 pfg_figs[[2]]
 
 
 ## merge fig
 pfg_fig_merged <- rbind(ggplotGrob(pfg_figs[[1]]), 
                         ggplotGrob(pfg_figs[[2]]),
-                        ggplotGrob(pfg_figs[[3]]),
                         size = "last")
 grid.newpage()
 grid.draw(pfg_fig_merged)
 
-ggsavePP(filename = "Output/Figs/pfg_prop",plot = pfg_fig_merged, width = 6, height = 6)
-
-
-
-# # post-hoc test
-# symbols <- cld(glht(c3r_by_r_m1, linfct = mcp(treatment = "Tukey")),  # symbols to be used for figures given by post-hoc test 
-#                decreasing = TRUE)$mcletters$Letters 
-# c3r_posthoc <- data.frame(treatment = names(symbols), 
-#                           symbols = as.character(symbols), row.names = NULL)
-# 
-# # summary df
-# summary_pfg <- pfg_rain %>% 
-#   select(-total, -c4grass) %>% 
-#   gather(variable, value, c3ratio) %>% 
-#   group_by(treatment, variable) %>% 
-#   summarise_each(funs(M = mean, SE = se, N = get_n), value) %>% 
-#   left_join(c3r_posthoc, by = "treatment") %>% 
-#   ungroup() %>% 
-#   mutate(treatment = factor(treatment, levels = c("Ambient", "Increased", "Reduced", 
-#                                                   "Reduced frequency", "Summer drought")))
-# 
-# 
-# # plot
-# fig_c3r <- ggplot(summary_pfg, aes(x = treatment, y = M, fill = treatment)) +
-#   labs(x = NULL, y = "C3 ratios") +
-#   
-#   geom_bar(stat = "identity", col = "black") +
-#   geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .3) +
-#   geom_text(aes(y = M + SE, label = symbols), vjust = -.4) +
-#   
-#   scale_x_discrete(labels = c("Ambient", "Increased\n(+50%)", "Reduced\n(-50%)",
-#                               "Reduced\nfrequency", "Summer\ndrought")) +
-#   scale_fill_manual(values = rain_cols) +
-#   theme(legend.position = "none",
-#         panel.border      = element_rect(color = "black"),
-#         panel.grid.major  = element_blank(), 
-#         panel.grid.minor  = element_blank())
-# 
-# 
-# # save
-# ggsavePP(filename = "Output/Figs/C3ratios_2016", 
-#          plot = fig_c3r, width = 6, height = 4)
-
+ggsavePP(filename = "Output/Figs/pfg_prop",plot = pfg_fig_merged, 
+         width = 6.5, height = 6.5 * 2 / 3)
 

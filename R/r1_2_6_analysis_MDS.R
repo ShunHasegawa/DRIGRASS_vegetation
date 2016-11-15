@@ -52,21 +52,65 @@ summary_site <- pcoa_site_df %>%
 # variance explained by PCoA axes
 exp_var <- round(PCoA_summ$eig[1:3] * PCoA_summ$GOF[2]/(sum(PCoA_summ$eig[1:3])) * 100, 1)
 
-fig_pcoa <- summary_site %>% 
-  mutate(variable = factor(variable, 
-                           levels = c("PCoA2", "PCoA3"), 
-                           labels = c(paste0("PCoA2 (", exp_var[2], "%)"),
-                                      paste0("PCoA3 (", exp_var[3], "%)")))) %>% 
+fig_pcoa_summer <- summary_site %>% 
+  filter(variable == "PCoA2") %>% 
   ggplot(., aes(x = PCoA1_M, y = value_M, col = treatment)) +
-  facet_grid(variable ~ time, scales = "free_y") +
-  labs(x = paste0("PCoA1 (", exp_var[1], "%)"), y = "Subsequent PCoA axis") +
-  geom_point(size = 1, alpha = .8) +
-  geom_errorbar(aes(ymin = value_M - value_SE, ymax = value_M + value_SE), width = .01, size = .2, alpha = .8) +
-  geom_errorbarh(aes(xmin = PCoA1_M - PCoA1_SE, xmax = PCoA1_M + PCoA1_SE), height = .01, size = .2, alpha = .8) +
-  science_theme+
-  theme(legend.position = "top",
-        axis.text.x = element_text(size = 5))
-fig_pcoa
+  facet_grid( ~ year, scales = "free_y") +
+  labs(x = paste0("PCoA1 (", exp_var[1], "%)"), 
+       y = paste0("PCoA2 (", exp_var[2], "%)")) +
+  
+  geom_errorbar(aes(ymin = value_M - value_SE, ymax = value_M + value_SE), 
+                width = .01, size = .5, alpha = .8) +
+  geom_errorbarh(aes(xmin = PCoA1_M - PCoA1_SE, xmax = PCoA1_M + PCoA1_SE), 
+                 height = .01, size = .5, alpha = .8) +
+  geom_point(size = 3, alpha = .8) +
+  
+  scale_color_manual(values = rain_cols) +
+  science_theme +
+  theme(legend.position = "top")
+fig_pcoa_summer
 
 ggsavePP(filename = "Output/Figs/PCoA_contherb_summer", width = 6.5, height  = 4, 
-         plot = fig_pcoa)
+         plot = fig_pcoa_summer)
+
+
+
+
+# . winter ------------------------------------------------------------------
+
+
+pc_df_wint <- decostand(sp_wint_df, method = "hellinger")
+PCoA_wint <- cmdscale(d = vegdist(pc_df_wint, method = "bray"), eig = TRUE, k = 3)
+summary(PCoA_wint)
+colnames(PCoA_wint$points) <- paste0("PCoA", 1:ncol(PCoA_wint$points))
+pcoa_site_df_wint <- cbind(site_wint_df, PCoA_wint$points)
+
+summary_site_wint <- pcoa_site_df_wint %>% 
+  gather(key = variable, value = value, PCoA2, PCoA3) %>% 
+  group_by(year, time, treatment, variable) %>%
+  summarise_each(funs(M = mean, SE = se, n = get_n), PCoA1, value)
+
+# variance explained by PCoA axes
+exp_var <- round(PCoA_wint$eig[1:3] * PCoA_wint$GOF[2]/(sum(PCoA_wint$eig[1:3])) * 100, 1)
+
+fig_PCoA_winter <- summary_site_wint %>% 
+  filter(variable == "PCoA2") %>% 
+  ggplot(., aes(x = PCoA1_M, y = value_M, col = treatment)) +
+  facet_grid( ~ year, scales = "free_y") +
+  labs(x = paste0("PCoA1 (", exp_var[1], "%)"), 
+       y = paste0("PCoA2 (", exp_var[2], "%)")) +
+  
+  geom_errorbar(aes(ymin = value_M - value_SE, ymax = value_M + value_SE), 
+                width = .01, size = .5, alpha = .8) +
+  geom_errorbarh(aes(xmin = PCoA1_M - PCoA1_SE, xmax = PCoA1_M + PCoA1_SE), 
+                 height = .01, size = .5, alpha = .8) +
+  geom_point(size = 3, alpha = .8) +
+  
+  scale_color_manual(values = rain_cols) +
+  science_theme +
+  theme(legend.position = "top")
+fig_PCoA_winter
+
+ggsavePP(filename = "Output/Figs/PCoA_contherb_winter", width = 6.5 / 2, height  = 4, 
+         plot = fig_PCoA_winter)
+

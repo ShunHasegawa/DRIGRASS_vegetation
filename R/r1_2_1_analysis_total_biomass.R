@@ -270,13 +270,17 @@ Anova(Dead_w_m2)
 
 
 # summary df
+
 summary_ab_biom <- ab_tot_biom %>%
-  mutate(month = as.numeric(as.character(month))) %>% 
-  filter(treatment != "No.shelter" & herb == "Control") %>% 
+  mutate(live = replace(live, which.max(live), NA),                               # remove an oulier
+         month = as.numeric(as.character(month))) %>% 
+  filter(treatment != "No.shelter") %>% 
   gather(key = variable, value = value, total, live, Dead) %>% 
   group_by(year, month, season, treatment, variable) %>% 
-  summarise_each(funs(M  = mean, SE = se, N  = get_n), value)
-
+  summarise_each(funs(M  = mean(., na.rm = TRUE), SE = se(., na.rm = TRUE), 
+                      N  = get_n), value) %>% 
+  left_join(anv_psthc_rslt, by = c("year", "season", "treatment", "variable"))
+head(anv_psthc_rslt)
 
 
 # create plots
@@ -288,12 +292,18 @@ fig_ab_biom <- dlply(summary_ab_biom, .(variable), function(x){
     geom_bar(stat = "identity", position = position_dodge(.9)) +
     geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .5,
                   position = position_dodge(.9), size = .4) +
+    geom_text(aes(y = M + SE, label = symbols), position = position_dodge(.9),
+              vjust = -.4) +
     
     science_theme +
     theme(legend.position  = "none") +
-    ylim(0, 420)
+    scale_fill_manual(values = rain_cols) 
 })
 fig_ab_biom[[1]]
+
+
+# adjust y lim
+fig_ab_biom[[2]] <- fig_ab_biom[[2]] + ylim(0, 300)
 
 
 # add legend
@@ -305,7 +315,10 @@ fig_ab_biom[[1]]
 
 
 # ylab
-ylabs <- paste(c("Dead", "Live", "Total"), "biomass")
+ylabs <- c(expression(Dead~biomass~(mg~plot^'-1')),
+           expression(Live~biomass~(mg~plot^'-1')),
+           expression(Total~biomass~(mg~plot^'-1')))
+  
 
 for (i in 1:3){
   fig_ab_biom[[i]] <- fig_ab_biom[[i]] + labs(y = ylabs[i])
@@ -337,70 +350,3 @@ grid.draw(ab_biom_plot_merged)
 ggsavePP(filename = "Output/Figs/biomass", plot = ab_biom_plot_merged,
          width = 6.5, height = 6.5)
 
-
-
-# # figure ------------------------------------------------------------------
-# 
-# biom_m_list <- list(live = live_m1, Dead = dead_m1, tot_biomass = tot_m1)
-# 
-# 
-# # post-hoc test
-# biom_posthoc <- ldply(biom_m_list, function(x) {
-#   
-#   # symbols to be used for figures given by post-hoc test
-#   symbols <- cld(glht(x, linfct = mcp(treatment = "Tukey")), decreasing = TRUE)$mcletters$Letters 
-#   d <- data.frame(treatment = names(symbols), symbols, row.names = NULL)
-#   d$symbols <- as.character(d$symbols)
-#   return(d)
-# },
-# .id = "variable")
-# 
-# 
-# # no treateffect for Dead biomass, so remove symbols
-# biom_posthoc$symbols[biom_posthoc$variable == "Dead"] <- ""
-# 
-# 
-# # create summary df
-# summary_ab_biom <- ab_tot_biom_ed %>% 
-#   gather(variable, value, tot_biomass, Dead, live) %>%
-#   group_by(treatment, variable) %>% 
-#   summarise_each(funs(M = mean, SE = se, N = get_n), value) %>% 
-#   left_join(biom_posthoc, by = c("treatment", "variable")) %>% 
-#   ungroup() %>% 
-#   mutate(treatment = factor(treatment, levels = c("Ambient", "Increased", "Reduced", 
-#                                                   "Reduced frequency", "Summer drought")))
-# 
-# 
-# # plot
-# biomass_fig_list <- dlply(summary_ab_biom, .(variable), function(x){
-#   p <- ggplot(x, aes(x = treatment, y = M, fill = treatment)) +
-#     labs(x = NULL) +
-#     
-#     geom_bar(stat = "identity", col = "black") +
-#     geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .3) +
-#     geom_text(aes(y = M + SE, label = symbols), vjust = -.4) +
-#     
-#     scale_x_discrete(labels = c("Ambient", "Increased\n(+50%)", "Reduced\n(-50%)",
-#                                 "Reduced\nfrequency", "Summer\ndrought")) +
-#     scale_fill_manual(values = rain_cols) +
-#     
-#     theme(legend.position = "none",
-#           panel.border      = element_rect(color = "black"),
-#           panel.grid.major  = element_blank(), 
-#           panel.grid.minor  = element_blank())
-#   
-#   return(p)
-# })
-# 
-# 
-# # edit y labels
-# biomass_fig_list[[1]] <- biomass_fig_list[[1]] + labs(y = "Dead biomass (g)")
-# biomass_fig_list[[2]] <- biomass_fig_list[[2]] + labs(y = "Live biomass (g)")
-# biomass_fig_list[[3]] <- biomass_fig_list[[3]] + labs(y = "Total biomass (g)")
-# 
-# 
-# # save as PDF and PNG
-# l_ply(names(biomass_fig_list), function(x){
-#   ggsavePP(filename = paste0("Output/Figs/", x, "_2016"), 
-#            plot     = biomass_fig_list[[x]], width = 6, height = 4)
-# })

@@ -70,7 +70,7 @@ fig_pcoa_summer <- summary_site %>%
   theme(legend.position = "top")
 fig_pcoa_summer
 
-ggsavePP(filename = "Output/Figs/PCoA_contherb_summer", width = 6.5, height  = 4, 
+ggsavePP(filename = "Output/Figs/PCoA_contherb_summer", width = 6.5, height  = 3.5, 
          plot = fig_pcoa_summer)
 
 
@@ -111,6 +111,6 @@ fig_PCoA_winter <- summary_site_wint %>%
   theme(legend.position = "top")
 fig_PCoA_winter
 
-ggsavePP(filename = "Output/Figs/PCoA_contherb_winter", width = 6.5 / 2, height  = 4, 
+ggsavePP(filename = "Output/Figs/PCoA_contherb_winter", width = 6.5 * 2 / 3, height  = 3.5, 
          plot = fig_PCoA_winter)
 

@@ -33,7 +33,7 @@ plot(prc(pc_df_s, site_summ_df$treatment , site_summ_df$year, site_summ_df))  # 
 
 
 prc_smmr <- capscale(pc_df_s ~ treatment * year + Condition(year), site_summ_df,  # bray-curtis distance
-                    distance = "bray")
+                    distance = "euclidean")
 prc_smmr_res <- summary(prc_smmr, scaling = 3)
 prc_smmr_site <- data.frame(prc_smmr_res$sites, site_summ_df)
 effect_d <- prc_smmr_site %>% 
@@ -47,7 +47,7 @@ range(prc_spp[, 1])
 
 get_prc_fig <- function(){
   par(mai = c(1, .8, .2, 1.5))
-  plot(eff ~ as.numeric(year), data = effect_d, ylim = c(-1.6, 1.6), 
+  plot(eff ~ as.numeric(year), data = effect_d, ylim = c(-3, 3), 
        axes = F, xlab = "Year", ylab = "Effect", type = "n")
   axis(side = 1, at = c(1, 2, 3), labels = 2014:2016)
   axis(side = 2, las = 2)

@@ -174,7 +174,8 @@ summary_stt_tbl <- ldply(all_ow_anova, function(x) x$summary_stats) %>%
   select(-season, -year, -term) %>% 
   spread(SYT, pval) %>% 
   mutate(variable = factor(variable, levels = c("live", "Dead", "total", "c34ratios", 
-                                                "grprop", "H", "J", "S"))) %>% 
+                                                "grprop", "H", "J", "S", "Forks", "sr_ratio", 
+                                                "Tips", "total_L", "total_SA"))) %>% 
   arrange(variable)
 
 write.csv(summary_stt_tbl, "Output/Tables/report/Summary_all_anova_results_stt.csv",

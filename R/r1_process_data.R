@@ -226,7 +226,8 @@ l_ply(names(ab_biom_list), function(x){                                         
 # > prepare df for further analysis -----------------------------------------
 
 
-# sp biomass
+# . sp biomass ------------------------------------------------------------
+
 ab_spp_biom <- select(ab_biom, -Dead, -unknown)                                  
 spp_names <- ab_spp_biom %>%                                    # species names
   select(-plot, -year, -month, -season, -treatment, -herb) %>%  # remove unnecessary columns
@@ -234,7 +235,11 @@ spp_names <- ab_spp_biom %>%                                    # species names
   sort()                                                        # order alphabetically
 
 
-# get biomass (total/live/dead)
+
+
+# . get biomass (total/live/dead) -----------------------------------------
+
+
 ab_tot_biom <-  ab_biom %>%                                    
   transmute(plot, year, month, season, treatment, herb, Dead,  # keep those columns
             live  = rowSums(.[, c(spp_names, "unknown")]),     # compute row sums for species. "." is inherited data frame from right abvoe (i.e. ab_biom)
@@ -243,7 +248,11 @@ ab_tot_biom <-  ab_biom %>%
 some(ab_tot_biom)
 
 
-# diversity indices
+
+
+# . diversity indices -----------------------------------------------------
+
+
 div_2016 <- ab_biom %>%
   transmute(year, month, season, plot, treatment, herb,
             H = diversity(.[spp_names]),                 # shannon's index
@@ -251,7 +260,12 @@ div_2016 <- ab_biom %>%
             J = H/log(S))                                # evenness
 
 
-# PFG ratios
+
+
+# . PFG ratios ------------------------------------------------------------
+
+
+
 sp_pfg <- read.csv("Data/spp_PFG_2016.csv")                                  # df for a list of PFG
 pfg_2016 <- ab_spp_biom %>% 
   gather(spp, value, -plot, -year, -month, -season, -treatment, -herb) %>%   # reshape: gather sp coumns to rows
@@ -267,3 +281,48 @@ pfg_2016 <- ab_spp_biom %>%
             grprop    = grass / total,                                       # get grass propotion
             grforatio = grass / forb) %>%                                    # get grass:forb ratios
   ungroup()                                                                  # remove grouping factors
+
+
+
+
+# . abundance-weighted average of plant tratis ----------------------------
+
+
+## plant trait df
+trate_d <- read.csv("Data/root_trait_smmry_bySpp.csv") %>%          # plant trait data generated in Shoot_Root
+  gather(variable, value, -spp) %>%                                 # reshape to a long format
+  mutate(type = ifelse(grepl("M$", variable), "M",                  # re-label for mean, SE and N
+                       ifelse(grepl("SE$", variable), "SE", "N")),
+         trait = gsub("_M$|_SE$|_N$", "", variable)) %>%            # remove _M, _SE, _N from character strings (e.g. Forks_M -> Forks)
+  select(-variable) %>%                                             # remove an unnecessar column
+  spread(type, value) %>%                                           # reshape to a wide format
+  filter(N > 1) %>%                                                 # choose species that at least two observations
+  select(-N, -SE) %>%                                               # remove unncessary columns
+  spread(spp, M) %>%                                                # reshape to a wide format
+  rename(Axonopus.fissifolius     = Axonopus,                       # correct sp names
+         Cynodon.dactlyon         = Cynodon,
+         Eragrostis.curvula       = Eragrostis,
+         Hypochaeris.radicata     = Hypochaeris,
+         Lolium.perenne           = Lolium,      
+         Microlaena.stipoides     = Microlaena, 
+         Paspalum.dilitatum       = Paspalum, 
+         Plantago.lanceolata      = Plantago,
+         Senecio.madagascariensis = Senecio,
+         Setaria.parviflora       = Setaria,
+         Sonchus.oleraceus        = Sonchus,
+         Vicia.sativa             = Vicia) %>% 
+  gather(variable, value, -trait) %>%                               # transpose df
+  spread(trait, value)
+treat_spp <- trate_d$variable  # species that have trait data  
+
+
+# get abundance-weighted average for each plot
+wghtdavrg_trait <- ab_spp_biom %>% 
+  select(plot, year, month, season, treatment, herb, one_of(treat_spp)) %>% 
+  gather(variable, value, one_of(treat_spp)) %>%
+  left_join(trate_d, by = "variable") %>%
+  group_by(plot, year, month, season, treatment, herb) %>% 
+  summarise_each(funs(weighted.mean(., w = value)), Forks, sr_ratio, Tips, total_L, total_SA) %>% 
+  ungroup()
+
+

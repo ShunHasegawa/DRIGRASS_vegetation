@@ -5,8 +5,9 @@
 # store all relevant dfs in a list
 all_dfs <- list('total_biomass'  = ab_tot_biom,  
                  'diversity'     = div_2016, 
-                 'biomass_byPfg' = select(pfg_2016, plot, year, month, season,
-                                          treatment, herb, c34ratios, grprop))  # required columns are selected
+                 'biomass_byPfg' = select(pfg_2016, plot, year, month, season,  # required columns are selected
+                                          treatment, herb, c34ratios, grprop),
+                'traits'         = wghtdavrg_trait)  
 
 
 # merge them
@@ -27,13 +28,20 @@ all_merged_trfm <- all_merged %>%
          S         = S,                                                        # evenness
          J         = J,                                                        # species richness
          c34ratios = log(c34ratios + .001),                                    # c3:c4 ratios
-         grprop    = asin(grprop)) %>%                                         # grass proportion relative to total abundance
-  gather(variable, trfm_value, Dead, live, total, H, S, J, c34ratios, grprop)  # reshape df to a long format
+         grprop    = asin(grprop),
+         Forks     = log(Forks),
+         sr_ratio  = log(sr_ratio),
+         Tips      = log(Tips),
+         total_L   = log(total_L),
+         total_SA  = log(total_SA)) %>%                                         # grass proportion relative to total abundance
+  gather(variable, trfm_value, Dead, live, total, H, S, J, c34ratios, grprop,   # reshape df to a long format
+         Forks, sr_ratio, Tips, total_L, total_SA)  
 
 
 # merge original and transformed data
 all_df <- all_merged %>% 
-  gather(variable, original_value, Dead, live, total, H, S, J, c34ratios, grprop) %>%
+  gather(variable, original_value, Dead, live, total, H, S, J, c34ratios, grprop, 
+         Forks, sr_ratio, Tips, total_L, total_SA) %>%
   filter(!is.na(original_value)) %>% 
   left_join(all_merged_trfm, 
             by = c("plot", "year", "month","season", "treatment", "herb", "variable")) 
@@ -145,7 +153,8 @@ dev.off()
 summary_tbl <- ldply(all_ow_anova, function(x) x$summary_tbl) %>% 
   mutate(variable = factor(variable, 
                            levels = c("live", "Dead", "total", "c34ratios", 
-                                      "grprop", "H", "J", "S"))) %>% 
+                                      "grprop", "H", "J", "S", "Forks", "sr_ratio", 
+                                      "Tips", "total_L", "total_SA"))) %>% 
   arrange(variable, season, year)
 write.csv(summary_tbl, "Output/Tables/Summary_all_anova_results.csv",
           row.names = FALSE)

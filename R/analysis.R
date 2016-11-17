@@ -31,7 +31,9 @@ source("R/r1_2_3_analysis_pfg.R")            # analysis for pfg ratios
 # source("R/r1_2_5_analysis_NMDS.R")           # Community composition (NMDS and PCA)
 source("R/r1_4_analysis_MDS.R")
 source("R/r1_5_analysis_PRC.R")
- 
+source("R/r1_2_6_analysis_community_traits.R")  # analysis for community-plant-traits 
+
+
 # figures
 # source("R/r1_3_1_fig_starplot.R")  # starplot
 

@@ -42,7 +42,7 @@ rql_m_l <- dlply(ab_spp_biom_ed, .(year, season), function(x){
 
 rql_models <- llply(rql_m_l, function(x) x$model)
 rql_res <- ldply(rql_m_l, function(x){
-  tbl <- x$anv$table
+  tbl <- x$anv$table[2, ]
   cbind(term = row.names(tbl), tbl)
 })
 

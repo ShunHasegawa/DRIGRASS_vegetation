@@ -52,7 +52,8 @@ sst <- ldply(all_ow_anova, function(x) x$summary_stats) %>%
   select(-year, -term) %>% 
   spread(SYT, pval) %>% 
   mutate(variable = factor(variable, levels = c("live", "Dead", "total", "c34ratios", 
-                                                "grprop", "H", "J", "S"))) %>% 
+                                                "grprop", "H", "J", "S", "Forks", "sr_ratio", 
+                                      "Tips", "total_L", "total_SA"))) %>% 
   arrange(variable)
 
 sst_summer <- sst %>% 
@@ -101,11 +102,11 @@ grid.draw(pfg_fig_merged)
 
 ## MDS analysis
 
-```{r Fig4a, echo=FALSE, fig.height=4, fig.width=6.5, results='hide', fig.cap="MDS for summer harvests"}
+```{r Fig4a, echo=FALSE, fig.height=3.5, fig.width=6.5, results='hide', fig.cap="MDS for summer harvests"}
 fig_pcoa_summer
 ```
 
-```{r Fig4b, echo=FALSE, fig.height=4, fig.width=4.3, results='hide', fig.cap="MDS for winter harvests"}
+```{r Fig4b, echo=FALSE, fig.height=3.5, fig.width=4.3, results='hide', fig.cap="MDS for winter harvests"}
 fig_PCoA_winter
 ```
 
@@ -118,6 +119,14 @@ fig_PCoA_winter
 get_prc_fig()
 ```
 
+
+
+## Community-level plant traits
+Plant tratis do not seem to vary between rainfall treatments within the same species (specific root forks, tips, length and surface area and shoot:root ratios). In order to test if community-level plant traits were affected by the treatments, we computed abundance-weighted means of plant traits for each plot.
+
+```{r Fig7, echo=FALSE, fig.height=8.5, fig.width=6.5, results='asis', fig.cap="Abundance-weighted means of communit-level plant tratis"}
+grid.draw(trait_plot_merged)
+```
 
 
 

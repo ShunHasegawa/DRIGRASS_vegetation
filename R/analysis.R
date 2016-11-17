@@ -13,7 +13,7 @@ summary(pfg_2016)     # df for plant functional groups (PFG)
 
 # summary table
 source("R/r1_1_create_summary_tbl.R")  # save as csv
-    ## Rung the function below to save as excel. This may take some time.
+    ## Run the function below to save as excel. This may take some time.
     ## get_summary_excel()  
 
 # stat and figure
@@ -22,7 +22,7 @@ rain_cols <- c("green4", "dodgerblue3", "red", "palegreen", "plum3")  # colors t
 options(na.action = "na.fail")
 
 
-source("R/r1_2_analysis_all_ow_anova.R")   # analysis for all measurements for each herbest in each year by one-way anova
+source("R/r1_2_analysis_all_ow_anova.R")   # analysis for all measurements for each harvest in each year by one-way anova
 source("R/r1_2.1_example_oneway_anova.R")  # show an example of one-way anova
 source("R/r1_2_1_analysis_total_biomass.R")  # anlaysis for total/live/dead biomass
 source("R/r1_2_2_analysis_diversity.R")      # analysis for diversity indices

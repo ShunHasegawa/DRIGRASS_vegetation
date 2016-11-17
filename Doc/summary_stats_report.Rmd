@@ -130,6 +130,19 @@ grid.draw(trait_plot_merged)
 
 
 
+
+## Fourth corner models (community assembly via trait selection; CATS)
+```{r cats_tbl, echo=FALSE, results='asis'}
+pander(rql_res, caption = "Summary of results of forth coner models for each harvest")
+```
+
+
+```{r cat_plot, echo=FALSE, fig.width=4.5, fig.height=4.5}
+l_ply(rql_plt_l, print)
+```
+
+
+
 ## One-way ANOVA for each harvest in each year
 ```{r oneway_anova_tbl, echo=FALSE, results='asis', warning=FALSE}
 emphasize.strong.cells(cbind(which(summary_tbl[, 5] <= 0.05), 5))

@@ -229,7 +229,7 @@ qqline(resid(s_w_m_fin))
 
 # summary df
 summary_div <- div_2016 %>% 
-  filter(treatment != "No.shelter" & herb == "Control") %>%       # remove no.shelter
+  filter(treatment != "No.shelter") %>%       # remove no.shelter
   mutate(month = as.numeric(as.character(month))) %>%             # change month from factor to numeric
   gather(key = variable, value = value, H, S, J) %>%              # reshape df to "long" format
   group_by(year, season, treatment, variable) %>%                 # summary for each group

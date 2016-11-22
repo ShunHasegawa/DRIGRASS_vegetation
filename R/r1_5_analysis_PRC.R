@@ -67,7 +67,8 @@ get_prc_fig()
 
 
 
-## get all permutation; this requires computatino power, so use multicores and carry out parallel processing to save time
+## get all permutation; this requires computational power, so use multicores and
+## carry out parallel processing to save time
 detectCores()                  # number of cores in the current machine
 registerDoParallel(cores = 3)  # register parallel background
 
@@ -79,10 +80,12 @@ contr <- how(within = Within(type = "series"),
 prc_res <- anova(prc_smmr, permutations = contr, by = "axis", parallel = 3)
 prc_res
 
+
+## Test treatement effect for each year (i.e. permanova for each year) 
 prc_by_year <- llply(2014:2016, function(x){
   spd          <- pc_df_s[site_summ_df$year == x, ]
   sited        <- site_summ_df[site_summ_df$year == x, ]
-  prc_year     <- capscale(spd ~ treatment, sited, distance = "bray")
+  prc_year     <- capscale(spd ~ treatment, sited, distance = "euclidean")
   prc_year_res <- anova(prc_year, permutations = 9999)
   return(prc_year_res)
 }, .parallel = TRUE, .paropts = list(.export = c("pc_df_s", "site_summ_df")))

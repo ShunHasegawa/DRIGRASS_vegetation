@@ -4,7 +4,9 @@ author: "Shun Hasegawa"
 date: "22 November 2016"
 output:
   html_document:
-    toc: true
+    toc: yes
+  word_document:
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}

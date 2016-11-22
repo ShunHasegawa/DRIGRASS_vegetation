@@ -1,7 +1,7 @@
 ---
 title: "DRIGRASS -Summary stats for report-"
 author: "Shun Hasegawa"
-date: "18 November 2016"
+date: "22 November 2016"
 output:
   html_document:
     toc: true
@@ -113,12 +113,31 @@ fig_PCoA_winter
 
 
 
-## Principal response curve (PRC)
+## Principal response curve (PRC) and PERMANOVA
 
-```{r Fig5, echo=FALSE, fig.height = 4, fig.width=6, results='asis', fig.cap="PRC for summer harvests"}
-get_prc_fig()
+```{r Fig5, echo=FALSE, fig.height=4, fig.width=6, results='asis', fig.cap="PRC for summer and winter harvests", fig.subcap=c("Summer", "Winter")}
+get_prc_fig_smmr()
+mtext(text = "Summer", side = 3)
+get_prc_fig(prc_effect_wint, prc_sp_wint, ylim = c(-2, 2))
+mtext(text = "Winter", side = 3)
 ```
 
+
+```{r prc_rslt, echo=TRUE, results='markup'}
+# Summer
+prc_res_smmr
+
+# Winter
+prc_res_wint
+```
+
+
+```{r permanova, echo=FALSE, results='asis'}
+emphasize.italics.cols(4)
+emphasize.strong.cells(cbind(which(prmnv_res_tbl[,4] < .05), 4))
+pander(prmnv_res_tbl, caption = "Results of PERMANOVA for each harvets for each year with 9999 permutations. Euclidean distance was used.")
+
+```
 
 
 ## Community-level plant traits

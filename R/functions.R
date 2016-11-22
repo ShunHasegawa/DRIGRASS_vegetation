@@ -184,3 +184,51 @@ get_persim_lmer <- function(lmermod, show.model.res = FALSE){
   return(fin_m)
 }
 
+
+# PRC related functions ---------------------------------------------------
+
+
+# this function returns a df with effect size (canonical coeeficience) from prc
+# results
+get_prc_effect_df <- function(prc.mod, site.df){
+  
+  # prc.mod: prc model
+  # site.df: site df used for prc
+  
+  prc_res  <- summary(prc.mod, scaling = 3)        # summary of prc analys
+  prc_site <- data.frame(prc_res$sites, site.df)  # site scores given by prc; merged with site.df
+  effect_d <- prc_site %>%                         # get traetment effect size
+    group_by(year, treatment) %>% 
+    summarise(value = mean(CAP1)) %>% 
+    group_by(year) %>% 
+    mutate(eff = value - value[treatment == "Ambient"], 
+           colval = as.character(mapvalues(treatment, treatment, rain_cols)))
+  return(effect_d)
+}
+
+
+# This creates a PRC plot using a df with effect size of PRC (see
+# get_prc_effect_df)
+get_prc_fig <- function(effect.df, sp.df, mai = c(1, .8, .2, 1.5), ...){
+  
+  # effect.df: df with effect size computed from PRC result (get_prc_effect_df)
+  # sp.df    : species and species scores to be plotted together with the effect size
+  # mai      : figure margin
+  # ...      : other graphical parameters
+  
+  par(mai = mai)
+  plot(eff ~ as.numeric(year), data = effect.df, axes = F, xlab = "Year", 
+       ylab = "Effect", type = "n", ...)
+  year_lab <- levels(effect.df$year)
+  axis(side = 1, at = 1:length(year_lab), labels = year_lab)
+  axis(side = 2, las = 2)
+  box()
+  d_ply(effect.df, .(treatment), function(x){
+    lines(eff ~ as.numeric(year), data = x, col = colval)
+    points(eff ~ as.numeric(year), data = x, col = colval, pch = 19)
+  })
+  legend("bottomleft", col = rain_cols, legend = levels(effect.df$treatment), pch = 19, bty = "n")
+  axis(side = 4, tck = .03, at = sp.df[, 1], 
+       labels = row.names(sp.df), las = 2, cex.axis = .7)
+}
+

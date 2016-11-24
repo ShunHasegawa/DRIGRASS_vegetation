@@ -37,6 +37,7 @@ rql_m_l <- dlply(ab_spp_biom_ed, .(year, season), function(x){
   env_d <<- droplevels(data.frame(d[, "treatment"]))
   ft <- traitglm(sp_d, env_d, tr_d)
   rql_res <- anova(ft, nBoot = 999)
+  rm(d, sp_d, tr_d, env_d, prsent_spp, common_spp)
   return(list(model = ft, anv = rql_res))
 })
 

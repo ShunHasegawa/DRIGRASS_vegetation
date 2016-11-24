@@ -3,26 +3,21 @@
 
 # summary df
 
-summary_trait <- wghtdavrg_trait %>%
-  mutate(month = as.numeric(as.character(month))) %>% 
-  filter(treatment != "No.shelter") %>% 
-  gather(key = variable, value = value, Forks, sr_ratio, Tips, total_L, total_SA) %>% 
-  group_by(year, month, season, treatment, variable) %>% 
-  summarise_each(funs(M  = mean(., na.rm = TRUE), SE = se(., na.rm = TRUE), 
-                      N  = get_n), value) %>% 
-  left_join(anv_psthc_rslt, by = c("year", "season", "treatment", "variable"))
+summary_trait <- filter(anv_psthc_rslt, variable %in% c("Forks", "sr_ratio", "Tips",
+                                                        "total_L", "total_SA"))
 
+  
 
 # create plots
 fig_trait <- dlply(summary_trait, .(variable), function(x){
-  ggplot(data = x, aes(x = year, y = M, fill = treatment)) +
+  ggplot(data = x, aes(x = year, y = response, fill = treatment)) +
     facet_grid(. ~ season, scales = "free_x", space = "free_x") +
     labs(x = "Year") +
     
     geom_bar(stat = "identity", position = position_dodge(.9)) +
-    geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .5,
+    geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = .5,
                   position = position_dodge(.9), size = .4) +
-    geom_text(aes(y = M + SE, label = symbols), position = position_dodge(.9),
+    geom_text(aes(y = upper.CL, label = symbols), position = position_dodge(.9),
               vjust = -.4, size = 2) +
     
     science_theme +

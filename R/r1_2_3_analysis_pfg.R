@@ -28,25 +28,21 @@ source("R/r1_2_3.3_grassprop.R")  # Grass proportion; Grass / Total
 
 
 ## summary df
-summary_pfg <- pfg_2016_ed %>%
-  gather(key = variable, value = value, c34ratios, grprop) %>% 
-  group_by(year, season, treatment, variable) %>%
-  summarise_each(funs(M = mean, SE = se, N = get_n), value) %>% 
-  left_join(anv_psthc_rslt, by = c("year", "season", "treatment", "variable"))
+summary_pfg <- filter(anv_psthc_rslt, variable %in% c("c34ratios", "grprop"))
 
 
 ## plot
 pfg_figs <- dlply(summary_pfg, .(variable), function(x){
-  ggplot(x, aes(x = year, y = M, fill = treatment)) +
+  ggplot(x, aes(x = year, y = response, fill = treatment)) +
     facet_wrap( ~ season, scales = "free") +
     labs(x = "", y = "") +
     
     geom_bar(stat = "identity", position = position_dodge(.9)) +
-    geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .5, 
+    geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = .5, 
                   position = position_dodge(.9), size = .4) +
-    geom_text(aes(y = M + SE, label = symbols), position = position_dodge(.9),
+    geom_text(aes(y = upper.CL, label = symbols), position = position_dodge(.9),
               vjust = -.4, size = 2) +
-    geom_blank(aes(y = (M + SE) * 1.03)) +  # adjust ymax so that symbols above error bars are placed wihtin a plot
+    geom_blank(aes(y = (upper.CL) * 1.03)) +  # adjust ymax so that symbols above error bars are placed wihtin a plot
     
     scale_fill_manual(values = rain_cols)+
     science_theme +

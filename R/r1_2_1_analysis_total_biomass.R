@@ -270,29 +270,19 @@ Anova(Dead_w_m2)
 
 
 # summary df
-
-summary_ab_biom <- ab_tot_biom %>%
-  mutate(live = replace(live, which.max(live), NA),                               # remove an oulier
-         month = as.numeric(as.character(month))) %>% 
-  filter(treatment != "No.shelter") %>% 
-  gather(key = variable, value = value, total, live, Dead) %>% 
-  group_by(year, month, season, treatment, variable) %>% 
-  summarise_each(funs(M  = mean(., na.rm = TRUE), SE = se(., na.rm = TRUE), 
-                      N  = get_n), value) %>% 
-  left_join(anv_psthc_rslt, by = c("year", "season", "treatment", "variable"))
-head(anv_psthc_rslt)
-
+summary_ab_biom <- filter(anv_psthc_rslt, variable %in% c("total", "live", "Dead"))
+  
 
 # create plots
 fig_ab_biom <- dlply(summary_ab_biom, .(variable), function(x){
-  ggplot(data = x, aes(x = year, y = M, fill = treatment)) +
+  ggplot(data = x, aes(x = year, y = response, fill = treatment)) +
     facet_grid(. ~ season, scales = "free_x", space = "free_x") +
     labs(x = "Year") +
     
     geom_bar(stat = "identity", position = position_dodge(.9)) +
-    geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .5,
+    geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = .5,
                   position = position_dodge(.9), size = .4) +
-    geom_text(aes(y = M + SE, label = symbols), position = position_dodge(.9),
+    geom_text(aes(y = upper.CL, label = symbols), position = position_dodge(.9),
               vjust = -.4, size = 2) +
     
     science_theme +
@@ -303,7 +293,7 @@ fig_ab_biom[[1]]
 
 
 # adjust y lim
-fig_ab_biom[[2]] <- fig_ab_biom[[2]] + ylim(0, 300)
+fig_ab_biom[[2]] <- fig_ab_biom[[2]] + ylim(0, 350)
 
 
 # add legend

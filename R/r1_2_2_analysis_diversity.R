@@ -228,24 +228,19 @@ qqline(resid(s_w_m_fin))
 
 
 # summary df
-summary_div <- div_2016 %>% 
-  filter(treatment != "No.shelter") %>%       # remove no.shelter
-  mutate(month = as.numeric(as.character(month))) %>%             # change month from factor to numeric
-  gather(key = variable, value = value, H, S, J) %>%              # reshape df to "long" format
-  group_by(year, season, treatment, variable) %>%                 # summary for each group
-  summarise_each(funs(M = mean, SE = se, N = get_n), value) %>%   # get mean, SE, sample size for each group
-  left_join(anv_psthc_rslt, by = c("year", "season", "treatment", "variable"))
+summary_div <- filter(anv_psthc_rslt, variable %in% c("H", "S", "J"))
+  
 
 # create figures
 fig_div <- dlply(summary_div, .(variable), function(x){
-  ggplot(data = x, aes(x = year, y = M, fill = treatment)) +      # change fill colors by treatment
+  ggplot(data = x, aes(x = year, y = response, fill = treatment)) +      # change fill colors by treatment
     labs(x = "Year") +                                            # label for x axis
     facet_grid(. ~ season, scales = "free_x", space = "free_x") +
                                                                   # make a main plot
     geom_bar(stat = "identity", position = position_dodge(.9)) +  # create bargrph. Each bar is placed next to each other
-    geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .5,  # add error bars
+    geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = .5,  # add error bars
                   position = position_dodge(.9), size = .4) +  
-    geom_text(aes(y = M + SE, label = symbols), position = position_dodge(.9),
+    geom_text(aes(y = upper.CL, label = symbols), position = position_dodge(.9),
               vjust = -.4, size = 2) +
     
                                                                   # set figure formatting  

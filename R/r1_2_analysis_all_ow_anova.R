@@ -20,31 +20,36 @@ all_merged <- Reduce(function(...){
   
 
 # transform data for anova
+
+## define transfomation for each variable; these values will be passed to
+## make.tran function
+trans_df <- data.frame(rbind(
+  c("Dead","genlog", 1),         # log(x + 1)
+  c("live","genlog", 0),         # log(x)
+  c("total","genlog", 0),
+  c("H","identity", 1),          # no transformation (1 won't be used. just random value is placed no to leave it empty)
+  c("S","identity", 1),
+  c("J","identity", 1),
+  c("c34ratios","genlog", .001), # log(x + .001)
+  c("grprop","asin.sqrt", 1),    # asin sqrt
+  c("Forks","genlog", 0),
+  c("sr_ratio","genlog", 0),
+  c("Tips","genlog", 0),
+  c("total_L","genlog", 0),
+  c("total_SA","genlog", 0))) %>% 
+  rename(variable = X1,
+         transtype = X2,
+         transparam = X3) %>% 
+  mutate(transparam = as.numeric(as.character(transparam)))
+
+
+## combine with df for data
 all_merged_trfm <- all_merged %>% 
-  mutate(Dead      = log(Dead + 1),                                            # dead biomass
-         live      = log(live),                                                # live biomass
-         total     = log(total),                                               # total biomass
-         H         = H,                                                        # diversity
-         S         = S,                                                        # evenness
-         J         = J,                                                        # species richness
-         c34ratios = log(c34ratios + .001),                                    # c3:c4 ratios
-         grprop    = asin(grprop),
-         Forks     = log(Forks),
-         sr_ratio  = log(sr_ratio),
-         Tips      = log(Tips),
-         total_L   = log(total_L),
-         total_SA  = log(total_SA)) %>%                                         # grass proportion relative to total abundance
-  gather(variable, trfm_value, Dead, live, total, H, S, J, c34ratios, grprop,   # reshape df to a long format
-         Forks, sr_ratio, Tips, total_L, total_SA)  
+  gather(variable, value, Dead, live, total, H, S, J, c34ratios, grprop,   # reshape df to a long format
+         Forks, sr_ratio, Tips, total_L, total_SA) %>% 
+  filter(!is.na(value)) %>% 
+  left_join(trans_df, by = "variable")
 
-
-# merge original and transformed data
-all_df <- all_merged %>% 
-  gather(variable, original_value, Dead, live, total, H, S, J, c34ratios, grprop, 
-         Forks, sr_ratio, Tips, total_L, total_SA) %>%
-  filter(!is.na(original_value)) %>% 
-  left_join(all_merged_trfm, 
-            by = c("plot", "year", "month","season", "treatment", "herb", "variable")) 
 
 
 
@@ -67,19 +72,35 @@ all_df <- all_merged %>%
         # represent significant difference between treatment.
         # 3. summary table of P values for each of treatment, herb and their
         # interactions
+        # 4. summary table of post-hoc test results; in addition to symbols, it 
+        # provides estimated 95% CI. Also when response variables are 
+        # transformed for analysys, means (referred to as response) and CI are
+        # reverse-transformed. The reversed-mean could be slightly different
+        # than original means
 
-
-all_ow_anova <- dlply(all_df, .(variable, season, year), function(x){
+all_ow_anova <- dlply(all_merged_trfm, .(variable, season, year), function(x){
   
   cat(paste("\n", unique(x$variable), unique(x$season), unique(x$year)))         
   
   d <- x[complete.cases(x), ]                                                    # remove rows with NA
   
+  trstype <- as.character(unique(d$transtype))  # transformation to be used
+  trspar  <- unique(d$transparam)               # transformation parameter
+  
   
   # test Rain x Herb
   d_hxr     <- filter(d, treatment %in%  c("Reduced frequency", "Ambient", 
                                            "Reduced"))                           # subset required treatment
-  m_hxr     <- lm(trfm_value ~ treatment * herb, data = d_hxr)                   # anova 
+  if(trstype == "identity"){
+    m_hxr <- lm(value ~ treatment * herb, data = d_hxr)
+  }else{
+    m_hxr <- with(make.tran(type = trstype, trspar), 
+                  lm(linkfun(value) ~ treatment * herb, data = d_hxr))
+  }
+  
+  
+    
+  # anova 
   anova_hxr <- tidy(Anova(m_hxr)) %>% # get anova results
     filter(grepl("herb", term))    # extract terms for herb and treatment:herb
   
@@ -96,28 +117,33 @@ all_ow_anova <- dlply(all_df, .(variable, season, year), function(x){
   
   
   # test Rain
-  model_rain <- lm(trfm_value ~ treatment, data = d_r)                           # anvoa
+  
+  if(trstype == "identity"){
+    model_rain <- lm(value ~ treatment, data = d_r)
+  }else{
+    model_rain <- with(make.tran(type = trstype, trspar), 
+                  lm(linkfun(value) ~ treatment, data = d_r))
+  }
   anova_r    <- tidy(Anova(model_rain))                                          # get anova results
   treat_p    <- anova_r$p.value[1]                                               # get P value for treatment
   treat_f    <- paste0("F(", anova_r$df[1], ",", anova_r$df[2], ")=",            # get F value and associated DFs
                        round(anova_r$statistic[1], 2)) 
   
   # post-hoc test when treatment was significant
-  if(treat_p <= 0.05){
-    symbols <- cld(glht(model_rain, linfct = mcp(treatment = "Tukey")),           # get symbols representing significant difference between treatmens 
-                   decreasing = TRUE)$mcletters$Letters
-    symbol_d <- data.frame(treatment = names(symbols), symbols, row.names = NULL) # store the result in df
-  } else {
-    symbol_d <- data.frame(treatment = unique(d_r$treatment), symbols = "")       # if there's no significant treatment effect, a post-hoc test is not performed
-  }
+  lsmtest <- lsmeans::lsmeans(model_rain, specs = "treatment")                    # post-hoc test with lsmeans
+  symbols <- gsub(" ", "", cld(lsmtest, Letters = letters, sort = FALSE)$.group)  # result of the post-hoc test (symbols)
+  ci_df   <- data.frame(summary(lsmtest, type = "response")) %>%                  # summary df for estimated means (response) and 95% CI. note reponse values could be slightly different than means of actual data when they're transformed for anlaysis and reverse-transformed
+    mutate(symbols = if(treat_p <= 0.05) symbols else "")                         # if there's no significant treatment effect, a post-hoc test is not shown
+  names(ci_df)[2] <- "response"
+
   
   
   # create summary table (Mean(SE) and significant symbols)
   summary_tbl <- d_r %>% 
     group_by(year, season, treatment) %>%                                        # summarise for each group
-    summarise_each(funs(M = mean, SE = se), original_value) %>%                  # mean and SE of original value
+    summarise_each(funs(M = mean, SE = se), value) %>%                           # mean and SE of original value
     ungroup() %>% 
-    left_join(symbol_d, by = "treatment") %>%                                    # merge with a post-hoc table 
+    left_join(select(ci_df, treatment, symbols), by = "treatment") %>%            # merge with a post-hoc table 
     transmute(year, season, treatment,                                           # concatenate mean, se and symbols
               value = paste0(round(M, 2), "(", round(SE, 2), ")", symbols)) %>% 
     spread(treatment, value) %>%                                                 # turn df to a wide format
@@ -133,7 +159,7 @@ all_ow_anova <- dlply(all_df, .(variable, season, year), function(x){
   
   
   l <- list('model' = model_rain, 'summary_tbl' = summary_tbl,                    # store the model and summary table in a list for output
-            'summary_stats' = summary_stats, 'summary_posthoc' = symbol_d)
+            'summary_stats' = summary_stats, 'summary_posthoc' = ci_df)
   return(l)
 })
 

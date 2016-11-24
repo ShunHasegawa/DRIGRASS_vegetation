@@ -137,7 +137,7 @@ prc_res_wint
 ```{r permanova, echo=FALSE, results='asis'}
 emphasize.italics.cols(4)
 emphasize.strong.cells(cbind(which(prmnv_res_tbl[,4] < .05), 4))
-pander(prmnv_res_tbl, caption = "Results of PERMANOVA for each harvets for each year with 9999 permutations. Euclidean distance was used.")
+pander(prmnv_res_tbl, caption = "Results of PERMANOVA for each harvets for each year with 9999 permutations. The Bray-Curtis dissimilarity was used.")
 
 ```
 

@@ -50,8 +50,8 @@ site_wint_df <- ab_spp_biom %>%
 
 
 ## tranform data
-pc_df_s <- decostand(sp_summ_df, method = "log")
-pc_df_w <- decostand(sp_wint_df, method = "log")
+pc_df_s <- log(sp_summ_df + 1)
+pc_df_w <- log(sp_wint_df + 1)
 plot(prc(pc_df_s, site_summ_df$treatment , site_summ_df$year))
 plot(prc(pc_df_w, site_wint_df$treatment , site_wint_df$year))
 
@@ -96,13 +96,13 @@ prc_res_smmr <- anova(prc_smmr, by = "axis", parallel = 3,
                       permutations = how(within = Within(type = "series"),
                                          plots  = Plots(strata = site_summ_df$plot, 
                                                         type = "free"),
-                                         nperm  = 4999))
+                                         nperm  = 9999))
 
 prc_res_wint <- anova(prc_wint, by = "axis", parallel = 3,
                       permutations = how(within = Within(type = "series"),
                                          plots  = Plots(strata = site_wint_df$plot, 
                                                         type = "free"),
-                                         nperm  = 4999))
+                                         nperm  = 9999))
 prc_res_smmr
 prc_res_wint
 
@@ -113,7 +113,7 @@ prc_res_wint
 prc_by_year_smmr <- llply(2014:2016, function(x){
   spd          <- pc_df_s[site_summ_df$year == x, ]
   sited        <- site_summ_df[site_summ_df$year == x, ]
-  prc_year     <- adonis(spd ~ treatment, sited, method = "euclidean", permutations = 9999)
+  prc_year     <- adonis(spd ~ treatment, sited, method = "bray", permutations = 9999)
   return(prc_year)
 }, .parallel = TRUE, .paropts = list(.export = c("pc_df_s", "site_summ_df")))
 names(prc_by_year_smmr) <- paste(2014:2016, "Summer", sep = "_")
@@ -122,7 +122,7 @@ names(prc_by_year_smmr) <- paste(2014:2016, "Summer", sep = "_")
 prc_by_year_wint <- llply(2013:2014, function(x){
   spd          <- pc_df_w[site_wint_df$year == x, ]
   sited        <- site_wint_df[site_wint_df$year == x, ]
-  prc_year     <- adonis(spd ~ treatment, sited, method = "euclidean", permutations = 9999)
+  prc_year     <- adonis(spd ~ treatment, sited, method = "bray", permutations = 9999)
   return(prc_year)
 }, .parallel = TRUE, .paropts = list(.export = c("pc_df_w", "site_wint_df")))
 names(prc_by_year_wint) <- paste(2013:2014, "Winter", sep = "_")
@@ -146,19 +146,20 @@ prmnv_res_tbl
 
 
 range(prc_effect_smmr$eff)
+range(prc_sp_smmr[,1])
 range(prc_effect_wint$eff)
-
+range(prc_sp_wint[,1])
 
 get_prc_fig_smmr <- function(){
-  get_prc_fig(prc_effect_smmr, prc_sp_smmr, ylim = c(-3, 3))
-  text(x = 3, y = max(effect_d$eff) * 1.2, labels = "*", cex = 2)  # add star for the year where significant treatment effects were found
+  get_prc_fig(prc_effect_smmr, prc_sp_smmr, ylim = c(-2, 2))
+  text(x = 3, y = max(prc_effect_smmr$eff) * 1.1, labels = "*", cex = 2)  # add star for the year where significant treatment effects were found
 }
 get_prc_fig_smmr()
 
 
-get_prc_fig(prc_effect_wint, prc_sp_wint, ylim = c(-2, 2))
+get_prc_fig(prc_effect_wint, prc_sp_wint, ylim = c(-1.3, 1.3))
 
 par(mfrow = c(2, 1))
 get_prc_fig_smmr()
-get_prc_fig(prc_effect_wint, prc_sp_wint, ylim = c(-2, 2))
+get_prc_fig(prc_effect_wint, prc_sp_wint, ylim = c(-1.3, 1.3))
 

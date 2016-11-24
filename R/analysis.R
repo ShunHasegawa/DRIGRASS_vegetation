@@ -22,8 +22,8 @@ rain_cols <- c("green4", "dodgerblue3", "red", "palegreen", "plum3")  # colors t
 options(na.action = "na.fail")
 
 
-source("R/r1_2_analysis_all_ow_anova.R")   # analysis for all measurements for each harvest in each year by one-way anova
-source("R/r1_2.1_example_oneway_anova.R")  # show an example of one-way anova
+source("R/r1_2_analysis_all_ow_anova.R")     # analysis for all measurements for each harvest in each year by one-way anova
+source("R/r1_2.1_example_oneway_anova.R")    # show an example of one-way anova
 source("R/r1_2_1_analysis_total_biomass.R")  # anlaysis for total/live/dead biomass
 source("R/r1_2_2_analysis_diversity.R")      # analysis for diversity indices
 source("R/r1_2_3_analysis_pfg.R")            # analysis for pfg ratios

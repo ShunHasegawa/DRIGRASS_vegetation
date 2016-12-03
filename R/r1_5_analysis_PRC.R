@@ -50,8 +50,8 @@ site_wint_df <- ab_spp_biom %>%
 
 
 ## tranform data
-pc_df_s <- log(sp_summ_df + 1)
-pc_df_w <- log(sp_wint_df + 1)
+pc_df_s <- decostand(sp_summ_df, method = "log")
+pc_df_w <- decostand(sp_wint_df, method = "log")
 plot(prc(pc_df_s, site_summ_df$treatment , site_summ_df$year))
 plot(prc(pc_df_w, site_wint_df$treatment , site_wint_df$year))
 
@@ -151,13 +151,13 @@ range(prc_effect_wint$eff)
 range(prc_sp_wint[,1])
 
 get_prc_fig_smmr <- function(){
-  get_prc_fig(prc_effect_smmr, prc_sp_smmr, ylim = c(-2, 2))
+  get_prc_fig(prc_effect_smmr, prc_sp_smmr, ylim = c(-3, 3))
   text(x = 3, y = max(prc_effect_smmr$eff) * 1.1, labels = "*", cex = 2)  # add star for the year where significant treatment effects were found
 }
 get_prc_fig_smmr()
 
 
-get_prc_fig(prc_effect_wint, prc_sp_wint, ylim = c(-1.3, 1.3))
+get_prc_fig(prc_effect_wint, prc_sp_wint, ylim = c(-1.6, 2.7))
 
 par(mfrow = c(2, 1))
 get_prc_fig_smmr()

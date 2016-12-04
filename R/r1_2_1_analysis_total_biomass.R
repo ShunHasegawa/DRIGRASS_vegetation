@@ -303,9 +303,9 @@ fig_ab_biom[[1]]
 
 
 # ylab
-ylabs <- c(expression(Dead~biomass~(mg~m^'-2')),
-           expression(Live~biomass~ (mg~m^'-2')),
-           expression(Total~biomass~(mg~m^'-2')))
+ylabs <- c(expression(Dead~biomass~(g~m^'-2')),
+           expression(Live~biomass~ (g~m^'-2')),
+           expression(Total~biomass~(g~m^'-2')))
   
 
 for (i in 1:3){

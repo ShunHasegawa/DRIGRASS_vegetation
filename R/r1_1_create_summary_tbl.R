@@ -28,6 +28,8 @@ summary_by_rain_list <- llply(all_list, function(x){
     select(-plot, -herb) %>%                                   # remove unneccessary columns
     group_by(year, month, season, treatment) %>%               # get mean, SE and number of obs for each treatement
     summarise_each(funs(Mean = mean, SE = se, N = get_n)) %>% 
+    group_by(year, month, season) %>% 
+    mutate_each(funs(RR = get_rr), ends_with("_Mean")) %>% 
     .[, order(names(.))] %>%                                   # order columns by alphabet; "." is df inherited from the abvoe
     select(year, month, season, treatment, everything())       # reorder columns; bring Date and treatment first
 })

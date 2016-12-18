@@ -1,15 +1,21 @@
-summary(sp_biom_2016)
+summary(ab_biom)
 
-# analyse only specie with >5% coverage
-spp_cov      <- colSums(sp_biom_2016[, spp_2016]) / sum(sp_biom_2016[, spp_2016]) # % biomass in total biomass
-dominent_spp <- names(spp_cov)[spp_cov > 0.05]                                    # spp wich >5%
+# analyse only dominent spp
+dominent_spp <- c("Axonopus.fissifolius","Cymbopogon.refractus", "Cynodon.dactlyon", 
+                  "Digitaria.sp","Eragrostis.curvula","Hypochaeris.radicata", 
+                  "Microlaena.stipoides", "Paspalum.dilitatum","Setaria.parviflora")
+
+# check sum for each season
+ab_biom %>% 
+  group_by(year, season) %>% 
+  summarise_each(funs(sum), one_of(dominent_spp))
+## remove Digitaria.sp in the winter 2013
 
 
 # use only dominent spp, and remove no shelter plot
-sp_biom_2016_ed <- sp_biom_2016 %>% 
-  select(treatment, herb, one_of(dominent_spp)) %>% 
+ab_biom_ed <- ab_biom %>% 
+  select(year, month, season, treatment, plot, herb, one_of(dominent_spp)) %>% 
   filter(treatment != "Ambient(no shelter)")
-
 
 
 
@@ -18,129 +24,89 @@ sp_biom_2016_ed <- sp_biom_2016 %>%
 
 
 
-# > rain x herb -------------------------------------------------------------
+# rain x herb
 
-
-# df to test rain x herb
-
-sp_biom_by_rxh <- sp_biom_2016_ed %>% 
+ab_biom_ed %>% 
   filter(treatment %in% c("Reduced frequency", "Ambient", "Reduced")) %>% 
-  droplevels(.)
-
-summary(sp_biom_by_rxh)
-create_trans_boxplot(Cympobogon.refractus + 1 ~ treatment * herb, data = sp_biom_by_rxh)
-create_trans_boxplot(Eragrostis.curvula   + 1 ~ treatment * herb, data = sp_biom_by_rxh)
-create_trans_boxplot(Paspalum.dilitatum   + 1 ~ treatment * herb, data = sp_biom_by_rxh)
-create_trans_boxplot(Setaria.parviflora   + 1 ~ treatment * herb, data = sp_biom_by_rxh)
-
-# remove one outlier from Setaria.parviflora 
-create_trans_boxplot(Setaria.parviflora   + 1 ~ treatment * herb,
-                     data = sp_biom_by_rxh[-which.max(sp_biom_by_rxh$Setaria.parviflora), ])
-sp_biom_by_rxh$Setaria.parviflora[which.max(sp_biom_by_rxh$Setaria.parviflora)] <- NA
-
-
-# list of formulas
-f_list <- llply(paste0("log(", dominent_spp, "+ 1) ~ treatment * herb"), as.formula)     
-
-
-# list of models
-m_list <- llply(f_list, function(x) lm(x, data = sp_biom_by_rxh, na.action = "na.omit")) 
-
-
-# anova
-llply(m_list, anova)
-
-
-# model diagnosis
-par(mfrow = c(4, 4))
-l_ply(m_list, plot)
-
-# no interaction or herbivore effect
-
-
-# > rain ------------------------------------------------------------------
-
-create_trans_boxplot(Cympobogon.refractus + 1 ~ treatment * herb, data = sp_biom_2016_ed)
-create_trans_boxplot(Eragrostis.curvula   + 1 ~ treatment * herb, data = sp_biom_2016_ed)
-create_trans_boxplot(Paspalum.dilitatum   + 1 ~ treatment * herb, data = sp_biom_2016_ed)
-create_trans_boxplot(Setaria.parviflora   + 1 ~ treatment * herb, data = sp_biom_2016_ed)
-sp_biom_2016_ed$Setaria.parviflora[which.max(sp_biom_2016_ed$Setaria.parviflora)] <- NA
-
-
-# list of formulas
-f_rain_list <- llply(paste0("log(", dominent_spp, "+ 1) ~ treatment"), as.formula)     
-names(f_rain_list) <- dominent_spp
-
-
-# list of models
-m_rain_list <- llply(f_rain_list, function(x) lm(x, data = sp_biom_2016_ed, na.action = "na.omit")) 
-
-
-# anova
-llply(m_rain_list, anova)
-
-
-# model diagnosis
-par(mfrow = c(4, 4))
-l_ply(m_rain_list, plot)
-
-
-
-
-# figures -----------------------------------------------------------------
-
-
-# post-hoc test
-spp_posthoc <- ldply(m_rain_list, function(x) {
-  
-  # symbols to be used for figures given by post-hoc test
-  symbols <- cld(glht(x, linfct = mcp(treatment = "Tukey")), decreasing = TRUE)$mcletters$Letters 
-  d <- data.frame(treatment = names(symbols), symbols, row.names = NULL)
-  d$symbols <- as.character(d$symbols)
-  return(d)
-},
-.id = "variable")
-
-# there's treatment effect only for Cympobogon.refractus
-spp_posthoc$symbols[spp_posthoc$variable != "Cympobogon.refractus"] <- ""
-
-
-# summary df
-summary_spp <- sp_biom_2016_ed %>% 
+  droplevels(.) %>% 
   gather(variable, value, one_of(dominent_spp)) %>% 
-  group_by(treatment, variable) %>% 
-  summarise_each(funs(M  = mean(., na.rm = TRUE), 
-                      SE = se(., na.rm = TRUE), 
-                      N  = get_n), value) %>% 
-  left_join(spp_posthoc, by = c("treatment", "variable")) %>% 
+  mutate(ys = paste(year, season, sep = "_")) %>% 
+ggplot(data = ., aes(x = treatment, y = log(value + 1), col = herb)) +
+  geom_boxplot() +
+  facet_grid(variable ~ ys, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+# rain
+
+ab_biom_ed %>% 
+  filter(treatment != "No.shelter") %>% 
+  droplevels(.) %>% 
+  gather(variable, value, one_of(dominent_spp)) %>% 
+  mutate(ys = paste(year, season, sep = "_")) %>% 
+  ggplot(data = ., aes(x = treatment, y = log(value + 1))) +
+  geom_boxplot() +
+  facet_grid(variable ~ ys, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+
+
+# figure ------------------------------------------------------------------
+
+
+
+# . prepare df --------------------------------------------------------------
+
+summary(ab_biom)
+
+# treatment mean
+treat_summary <- ab_biom %>% 
+  filter(treatment != "No.shelter") %>%                       # remove non-sheltered
+  select(year, season, treatment, one_of(dominent_spp)) %>%  # select required columns
+  group_by(treatment, year, season) %>%                      # grouping
+  summarise_each(funs(mean(., na.rm = TRUE)), -treatment) %>%                  # get mean for each species (i.e. all columns except treatment)
   ungroup() %>% 
-  mutate(treatment = factor(treatment, levels = c("Ambient", "Increased", "Reduced", 
-                                                  "Reduced frequency", "Summer drought")),
-         variable  = gsub("[.]", " ", as.character(variable))) %>% 
-  arrange(variable)
+  mutate(treatment = dplyr::recode(treatment, 
+                            Ambient             = "AMB",
+                            Increased           = "IR",
+                            Reduced             = "RR",
+                            `Reduced frequency` = "RF",
+                            `Summer drought`    = "SD"))
 
 
-# plot
-sp_plot <- ggplot(summary_spp, aes(x = treatment, y = M, fill = treatment)) +
-  labs(x = NULL, y = "Biomass (g)") +
-  facet_wrap(~ variable) +
-  
-  
-  geom_bar(stat = "identity", col = "black") +
-  geom_errorbar(aes(ymin = M - SE, ymax = M + SE), width = .3) +
-  geom_text(aes(y = M + SE, label = symbols), vjust = -.4) +
-  
-  scale_x_discrete(labels = c("Ambient", "Increased\n(+50%)", "Reduced\n(-50%)",
-                              "Reduced\nfrequency", "Summer\ndrought")) +
-  scale_y_continuous(limits = c(0, 80)) +
-  scale_fill_manual(values = rain_cols) +
-  
-  theme(legend.position = "none",
-        panel.border      = element_rect(color = "black"),
-        panel.grid.major  = element_blank(), 
-        panel.grid.minor  = element_blank(),
-        axis.text.x       = element_text(size = 9),
-        strip.text        = element_text(face = "italic"))
+# . plot ------------------------------------------------------------------
 
-ggsavePP(filename = "Output/Figs/dominent_spp_2016", plot = sp_plot,
-         width = 6.5, height = 6.5)
+
+spcol <- brewer.pal(9, "RdYlGn")                                                # color palette
+loc   <- matrix(data = c(0, 6, 3, 6, 6, 6, 0, .5, 6, .5), ncol = 2, byrow = T)  # layout of each subplot
+
+# species labels
+str_lab <- sapply(strsplit(dominent_spp, split = "[.]"),                       # split character by period (.)
+                  function(x){           
+                    parse(text = paste0("italic(",substr(x[1], 1, 1),          # create expression objects
+                                        ".", x[2], ")"))  
+                  })
+
+# star plot
+
+plot_starplot <- function(){
+  par(mfrow = c(2, 3))
+  d_ply(treat_summary, .(season, year), function(x){
+    figtitle <- paste(unique(x$season), unique(x$year))
+    stars(x[,c(-1:-3)], location = loc, key.loc=c(3,3),         
+          labels = x$treatment, key.labels = str_lab,
+          col.segments = spcol, col.stars = treatcol, frame.plot=TRUE, 
+          main = figtitle, draw.segment = TRUE, cex = 1,lwd = 1)
+  })
+}
+
+
+save_png600(filename = "Output/Figs/star_plot.png", width = 6.5, height = 5)
+plot_starplot()
+dev.off()
+
+pdf(file = "Output/Figs/star_plot.pdf", width = 6.5, height = 5)
+plot_starplot()
+dev.off()
+

@@ -7,7 +7,9 @@ all_dfs <- list('total_biomass'  = ab_tot_biom,
                  'diversity'     = div_2016, 
                  'biomass_byPfg' = select(pfg_2016, plot, year, month, season,  # required columns are selected
                                           treatment, herb, c34ratios, grprop),
-                'traits'         = wghtdavrg_trait)  
+                'traits'         = wghtdavrg_trait,
+                'dominent_sp'    = select(ab_biom_ed, year, season, month, plot,
+                                          treatment, herb, one_of(dominent_spp)))  
 
 
 # merge them
@@ -24,21 +26,30 @@ all_merged <- Reduce(function(...){
 ## define transfomation for each variable; these values will be passed to
 ## make.tran function
 trans_df <- data.frame(rbind(
-  c("Dead","genlog", 1),         # log(x + 1)
-  c("live","genlog", 0),         # log(x)
-  c("total","genlog", 0),
-  c("H","identity", 1),          # no transformation (1 won't be used. just random value is placed no to leave it empty)
-  c("S","identity", 1),
-  c("J","identity", 1),
-  c("c34ratios","genlog", .001), # log(x + .001)
-  c("grprop","asin.sqrt", 1),    # asin sqrt
-  c("Forks","genlog", 0),
-  c("sr_ratio","genlog", 0),
-  c("Tips","genlog", 0),
-  c("total_L","genlog", 0),
-  c("total_SA","genlog", 0))) %>% 
-  rename(variable = X1,
-         transtype = X2,
+  c("Dead"                , "genlog"   , 1),    # log(x + 1)
+  c("live"                , "genlog"   , 0),    # log(x)
+  c("total"               , "genlog"   , 0),
+  c("H"                   , "identity" , 1),    # no transformation (1 won't be used. just random value is placed no to leave it empty)
+  c("S"                   , "identity" , 1),
+  c("J"                   , "identity" , 1),
+  c("c34ratios"           , "genlog"   , .001), # log(x + .001)
+  c("grprop"              , "asin.sqrt", 1),    # asin sqrt
+  c("Forks"               , "genlog"   , 0),
+  c("sr_ratio"            , "genlog"   , 0),
+  c("Tips"                , "genlog"   , 0),
+  c("total_L"             , "genlog"   , 0),
+  c("total_SA"            , "genlog"   , 0),
+  c("Axonopus.fissifolius", "genlog"   , 1),
+  c("Cymbopogon.refractus", "genlog"   , 1),
+  c("Cynodon.dactlyon"    , "genlog"   , 1),
+  c("Digitaria.sp"        , "genlog"   , 1),
+  c("Eragrostis.curvula"  , "genlog"   , 1),
+  c("Hypochaeris.radicata", "genlog"   , 1),
+  c("Microlaena.stipoides", "genlog"   , 1),
+  c("Paspalum.dilitatum"  , "genlog"   , 1),
+  c("Setaria.parviflora"  , "genlog"   , 1))) %>% 
+  rename(variable   = X1,
+         transtype  = X2,
          transparam = X3) %>% 
   mutate(transparam = as.numeric(as.character(transparam)))
 
@@ -46,9 +57,10 @@ trans_df <- data.frame(rbind(
 ## combine with df for data
 all_merged_trfm <- all_merged %>% 
   gather(variable, value, Dead, live, total, H, S, J, c34ratios, grprop,   # reshape df to a long format
-         Forks, sr_ratio, Tips, total_L, total_SA) %>% 
+         Forks, sr_ratio, Tips, total_L, total_SA, one_of(dominent_spp)) %>% 
   filter(!is.na(value)) %>% 
-  left_join(trans_df, by = "variable")
+  left_join(trans_df, by = "variable") %>% 
+  filter(!(year == 2013 & season == "Winter" & variable == "Digitaria.sp"))  # no Dgitaria.sp was found in this harvest
 
 
 
@@ -180,7 +192,7 @@ summary_tbl <- ldply(all_ow_anova, function(x) x$summary_tbl) %>%
   mutate(variable = factor(variable, 
                            levels = c("live", "Dead", "total", "c34ratios", 
                                       "grprop", "H", "J", "S", "Forks", "sr_ratio", 
-                                      "Tips", "total_L", "total_SA"))) %>% 
+                                      "Tips", "total_L", "total_SA", dominent_spp))) %>% 
   arrange(variable, season, year)
 write.csv(summary_tbl, "Output/Tables/Summary_all_anova_results.csv",
           row.names = FALSE)
@@ -201,7 +213,7 @@ summary_stt_tbl <- ldply(all_ow_anova, function(x) x$summary_stats) %>%
   spread(SYT, pval) %>% 
   mutate(variable = factor(variable, levels = c("live", "Dead", "total", "c34ratios", 
                                                 "grprop", "H", "J", "S", "Forks", "sr_ratio", 
-                                                "Tips", "total_L", "total_SA"))) %>% 
+                                                "Tips", "total_L", "total_SA", dominent_spp))) %>% 
   arrange(variable)
 
 write.csv(summary_stt_tbl, "Output/Tables/report/Summary_all_anova_results_stt.csv",

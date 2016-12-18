@@ -19,13 +19,13 @@ sp_wint_df <- ab_spp_biom %>%
 site_summ_df <- ab_spp_biom %>%
   filter(treatment != "No.shelter" & herb == "Control" & month == 4) %>% 
   select(-one_of(spp_names)) %>%
-  mutate(time = paste(year, month.abb[as.numeric(month)], sep = "-")) %>% 
+  mutate(time = paste(season, year)) %>% 
   arrange(plot, year)
 
 site_wint_df <- ab_spp_biom %>%
   filter(treatment != "No.shelter" & herb == "Control"& month == 10) %>% 
   select(-one_of(spp_names)) %>%
-  mutate(time = paste(year, month.abb[as.numeric(month)], sep = "-")) %>% 
+  mutate(time = paste(season, year)) %>% 
   arrange(plot, year)
 
 
@@ -55,7 +55,7 @@ exp_var <- round(PCoA_summ$eig[1:3] * PCoA_summ$GOF[2]/(sum(PCoA_summ$eig[1:3]))
 fig_pcoa_summer <- summary_site %>% 
   filter(variable == "PCoA2") %>% 
   ggplot(., aes(x = PCoA1_M, y = value_M, col = treatment)) +
-  facet_grid( ~ year, scales = "free_y") +
+  facet_grid( ~ time, scales = "free_y") +
   labs(x = paste0("MDS1 (", exp_var[1], "%)"), 
        y = paste0("MDS2 (", exp_var[2], "%)")) +
   
@@ -69,9 +69,6 @@ fig_pcoa_summer <- summary_site %>%
   science_theme +
   theme(legend.position = "top")
 fig_pcoa_summer
-
-ggsavePP(filename = "Output/Figs/PCoA_contherb_summer", width = 6.5, height  = 3.5, 
-         plot = fig_pcoa_summer)
 
 
 
@@ -87,6 +84,7 @@ pcoa_site_df_wint <- cbind(site_wint_df, PCoA_wint$points)
 
 summary_site_wint <- pcoa_site_df_wint %>% 
   gather(key = variable, value = value, PCoA2, PCoA3) %>% 
+  mutate(time = factor(time, levels = c("Winter 2013", "Winter 2014", ""))) %>% 
   group_by(year, time, treatment, variable) %>%
   summarise_each(funs(M = mean, SE = se, n = get_n), PCoA1, value)
 
@@ -96,7 +94,7 @@ exp_var <- round(PCoA_wint$eig[1:3] * PCoA_wint$GOF[2]/(sum(PCoA_wint$eig[1:3]))
 fig_PCoA_winter <- summary_site_wint %>% 
   filter(variable == "PCoA2") %>% 
   ggplot(., aes(x = PCoA1_M, y = value_M, col = treatment)) +
-  facet_grid( ~ year, scales = "free_y") +
+  facet_grid( ~ time, drop = FALSE) +
   labs(x = paste0("MDS1 (", exp_var[1], "%)"), 
        y = paste0("MDS2 (", exp_var[2], "%)")) +
   
@@ -105,12 +103,28 @@ fig_PCoA_winter <- summary_site_wint %>%
   geom_errorbarh(aes(xmin = PCoA1_M - PCoA1_SE, xmax = PCoA1_M + PCoA1_SE), 
                  height = .01, size = .5, alpha = .8) +
   geom_point(size = 3, alpha = .8) +
+  geom_blank(data = blanddf, aes(x = PCoA1_M, y = value_M, col = treatment)) +
   
   scale_color_manual(values = rain_cols) +
   science_theme +
-  theme(legend.position = "top")
+  theme(legend.position = "none")
 fig_PCoA_winter
 
-ggsavePP(filename = "Output/Figs/PCoA_contherb_winter", width = 6.5 * 2 / 3, height  = 3.5, 
-         plot = fig_PCoA_winter)
+
+
+
+
+# . merge figure ------------------------------------------------------------
+
+
+merged_MDS <- rbind(ggplotGrob(fig_pcoa_summer), 
+                    ggplotGrob(fig_PCoA_winter),
+                    size = "last")
+grid.newpage()
+grid.draw(merged_MDS)
+
+# save
+ggsavePP(filename = "Output/Figs/MDS", plot = merged_MDS,
+         width = 6.5, height = 5)
+
 

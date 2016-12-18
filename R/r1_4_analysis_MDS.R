@@ -56,8 +56,8 @@ fig_pcoa_summer <- summary_site %>%
   filter(variable == "PCoA2") %>% 
   ggplot(., aes(x = PCoA1_M, y = value_M, col = treatment)) +
   facet_grid( ~ year, scales = "free_y") +
-  labs(x = paste0("PCoA1 (", exp_var[1], "%)"), 
-       y = paste0("PCoA2 (", exp_var[2], "%)")) +
+  labs(x = paste0("MDS1 (", exp_var[1], "%)"), 
+       y = paste0("MDS2 (", exp_var[2], "%)")) +
   
   geom_errorbar(aes(ymin = value_M - value_SE, ymax = value_M + value_SE), 
                 width = .01, size = .5, alpha = .8) +
@@ -97,8 +97,8 @@ fig_PCoA_winter <- summary_site_wint %>%
   filter(variable == "PCoA2") %>% 
   ggplot(., aes(x = PCoA1_M, y = value_M, col = treatment)) +
   facet_grid( ~ year, scales = "free_y") +
-  labs(x = paste0("PCoA1 (", exp_var[1], "%)"), 
-       y = paste0("PCoA2 (", exp_var[2], "%)")) +
+  labs(x = paste0("MDS1 (", exp_var[1], "%)"), 
+       y = paste0("MDS2 (", exp_var[2], "%)")) +
   
   geom_errorbar(aes(ymin = value_M - value_SE, ymax = value_M + value_SE), 
                 width = .01, size = .5, alpha = .8) +

@@ -23,7 +23,7 @@ library(tidyr)
 library(vegan)
 # knitr::opts_chunk$set(echo = TRUE, fig.path='Figs_report/DRIGRASS_harvest_',
 #                       dev=c('pdf', 'png'), dpi = 600)
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, dpi=600)
 load("../Data/all_obj_traits.RData") # results from plant traits
 load("../Output/Data/all_obj.RData")
 
@@ -45,19 +45,17 @@ lmer_anova_tbl <- function(lmermod, ...){
 
 
 ## To do
-* mention species weight on PRC
-* merge summer and winter PRC plots
-* merge summer and winter MDS plots
-* add box-whisker plots of plant traits for each species
-* format tables and modify labels
-* replace figures with the ones with better resolution (dpi = 600)
-* mention plant functional groups
 * explain results of forth-corner analysis
-
-<!-- * change error bars to ellipses on MDS ordination plots -->
-<!-- * add dominant species -->
-<!-- * add star plots -->
-<!-- * mention herbivore effects -->
+* mention plant functional groups
+* ~~add box-whisker plots of plant traits for each species~~
+* ~~replace figures with the ones with better resolution (dpi = 600)~~
+* ~~mention species weight on PRC~~
+* ~~merge summer and winter PRC plots~~
+* ~~merge summer and winter MDS plots~~
+* ~~add dominant species~~
+* ~~add star plots~~
+* ~~mention herbivore effects~~
+* (change error bars to ellipses on MDS ordination plots)
 
 
 <br>
@@ -65,6 +63,7 @@ lmer_anova_tbl <- function(lmermod, ...){
 ## Summary results
 Overall, we found substantial effects of rainfall treatments on plant biomass and community at the study site, whereas there was little evidence of herbivore effects. The impacts of rainfall treatments were most distinctive in the summer in the last year (2016) of this study (Table 1, Table 2).
 
+<br>
 
 ```{r smmry_stat_tbl, echo=FALSE, results='asis'}
 sst <- ldply(all_ow_anova, function(x) x$summary_stats) %>%
@@ -78,25 +77,25 @@ sst <- ldply(all_ow_anova, function(x) x$summary_stats) %>%
                                          live                 = "Live biomass", 
                                          Dead                 = "Dead biomass", 
                                          total                = "Total biomass", 
-                                         c34ratios            = "C3:C4 ratios", 
+                                         c34ratios            = "C~3~:C~4~ ratio", 
                                          grprop               = "Grass proportion", 
-                                         H                    = "H'", 
-                                         J                    = "J'", 
-                                         S                    = "S", 
+                                         H                    = "*H'*", 
+                                         J                    = "*J'*", 
+                                         S                    = "*S*", 
                                          Forks                = "Root forks", 
                                          Tips                 = "Root tips", 
                                          sr_ratio             = "Shoot:root ratios", 
-                                         total_L              ="Root length", 
-                                         total_SA             = "Root SA",
-                                         Axonopus.fissifolius = "Axonopus fissifolius",
-                                         Cymbopogon.refractus = "Cymbopogon refractus",
-                                         Cynodon.dactlyon     = "Cynodon dactlyon    ",
-                                         Digitaria.sp         = "Digitaria sp        ",
-                                         Eragrostis.curvula   = "Eragrostis curvula  ",
-                                         Hypochaeris.radicata = "Hypochaeris radicata",
-                                         Microlaena.stipoides = "Microlaena stipoides",
-                                         Paspalum.dilitatum   = "Paspalum dilitatum",
-                                         Setaria.parviflora   = "Setaria parviflora")) %>% 
+                                         total_L              = "Root length", 
+                                         total_SA             = "Root surface area",
+                                         Axonopus.fissifolius = "*Axonopus fissifolius*",
+                                         Cymbopogon.refractus = "*Cymbopogon refractus*",
+                                         Cynodon.dactlyon     = "*Cynodon dactlyon*    ",
+                                         Digitaria.sp         = "*Digitaria sp*        ",
+                                         Eragrostis.curvula   = "*Eragrostis curvula*  ",
+                                         Hypochaeris.radicata = "*Hypochaeris radicata*",
+                                         Microlaena.stipoides = "*Microlaena stipoides*",
+                                         Paspalum.dilitatum   = "*Paspalum dilitatum*",
+                                         Setaria.parviflora   = "*Setaria parviflora*")) %>% 
   arrange(variable)
 
 sst_summer <- sst %>% 
@@ -110,13 +109,13 @@ sst_winter <- sst %>%
   .[!apply(., 2, function(x) all(is.na(x)))]
 
 
-pander(sst_summer, split.cell = 2, split.table = Inf, caption = "Table 1. Summary results of analysis of variances (ANVOAs) with herbivore (Herb), rainfall (Rain) and their interaction (RxH) as fixed factors for summer harvests on the following response variables: live, dead, and total biomass, C3:C4 ratios, the proportion of grasses in the total abundance, diversity indices (Shannon-Wiener diversity index (*H'*), Pielou’s evenness (*J'*) and species richness (*S*)), the community-weighted averages of plant traits  (the number of root forks and tips, total root length and surface area, and shoot:root ratios) and dominent species. The plant traits, except shoot:root ratios, were expresses on root mass basis. Significance codes are *P* < 0.5 (\\* ), < 0.01 (\\**), and < 0.001 (\\***), respectively, otherwise shown as ns (not significant). *F* values and associated degrees of freedom used for the ANOVAs are shown in Tables S1.")
+pander(sst_summer, split.cell = 2, split.table = Inf, caption = "Table 1. Summary results of analysis of variances (ANVOAs) with herbivore (Herb), rainfall (Rain) and their interaction (RxH) as fixed factors for summer harvests on the following response variables: live, dead, and total biomass, C3:C4 ratios, the proportion of grasses in the total abundance, diversity indices (Shannon-Wiener diversity index (*H'*), Pielou’s evenness (*J'*) and species richness (*S*)), the community-weighted averages of plant traits  (the number of root forks and tips, total root length and surface area, and shoot:root ratios) and dominant species. The plant traits, except shoot:root ratios, were expresses on root mass basis. Significance codes are *P* < 0.5 (\\*), < 0.01 (\\**), and < 0.001 (\\***), respectively, otherwise shown as ns (not significant). *F* values and associated degrees of freedom used for the ANOVAs are shown in Tables S1.")
 ```
 
 <br>
 
 ```{r Tabl2_stat_winter, echo=FALSE, results='asis'}
-pander(sst_winter, split.cell = 2, split.table = Inf, caption = "Table 2. Summary results of analysis of variances (ANVOAs) with herbivore (Herb), rainfall (Rain) and their interaction (RxH) as fixed factors for winter harvests on the following response variables: live, dead, and total biomass, C3:C4 ratios, the proportion of grasses in the total abundance, diversity indices (Shannon-Wiener diversity index (*H'*), Pielou’s evenness (*J'*) and species richness (*S*)), the community-weighted averages of plant traits  (the number of root forks and tips, total root length and surface area, and shoot:root ratios) and dominent species. The plant traits, except shoot:root ratios, were expresses on root mass basis. Significance codes are *P* < 0.5 (\\*), < 0.01 (\\**), and < 0.001 (\\***), respectively, otherwise shown as ns (not significant). *F* values and associated degrees of freedom used for the ANOVAs are shown in Tables S1.")
+pander(sst_winter, split.cell = 2, split.table = Inf, caption = "Table 2. Summary results of analysis of variances (ANVOAs) with herbivore (Herb), rainfall (Rain) and their interaction (RxH) as fixed factors for winter harvests on the following response variables: live, dead, and total biomass, C3:C4 ratios, the proportion of grasses in the total abundance, diversity indices (Shannon-Wiener diversity index (*H'*), Pielou’s evenness (*J'*) and species richness (*S*)), the community-weighted averages of plant traits  (the number of root forks and tips, total root length and surface area, and shoot:root ratios) and dominant species. The plant traits, except shoot:root ratios, were expresses on root mass basis. Significance codes are *P* < 0.5 (\\*), < 0.01 (\\**), and < 0.001 (\\***), respectively, otherwise shown as ns (not significant). *F* values and associated degrees of freedom used for the ANOVAs are shown in Tables S1.")
 
 ```
 
@@ -137,7 +136,7 @@ grid.draw(ab_biom_plot_merged)
 ### Biomass allocation
 We assessed biomass allocation from above- and below-ground comprehensive harvest conducted in September 2015. ANOVAs demonstrated no significant rainfall effects on any of above-, below-ground biomass or above:blow-ground biomass ratios (Fig 2).
 
-```{r Fig2_biomass_allocation, echo=FALSE, warning=FALSE, fig.width=4, fig.height=4, fig.cap="Fig 2. Above- and below-ground biomass (Mean ± 95%CI). Confidence intervals (CIs) were estimated from linear models. When response variables were transformed for the linear model analysis (ANOVA), estimated CIs were reverse transformed prior to plotting."}
+```{r Fig2_biomass_allocation, echo=FALSE, warning=FALSE, fig.width=5, fig.height=5, fig.cap="Fig 2. Above- and below-ground biomass (Mean ± 95%CI). Confidence intervals (CIs) were estimated from linear models. When response variables were transformed for the linear model analysis (ANOVA), estimated CIs were reverse transformed prior to plotting."}
 fig_tot_biom
 ```
 
@@ -156,12 +155,12 @@ grid.draw(div_plot_merged)
 
 <br>
 
-## Dominent species
+## Dominant species
 In summer, dominant species were generally more abundant in AMB and IR compared to RR and SD, with no herbivore effect (Fig 4). For instance, SD significantly increased the abundance of *C. refractus* in 2016 by 92% relative to AMB. ANOVAs demonstrated significant rainfall effects on *M. stipoides* (Table 1) with significant decreases by 98% and 95% under SD in 2014 and 2016 and by 66% under RR in 2015 compared to AMB, respectively. The abundance of *M. stipoides* was highest under IR through the study years with 98% increases relative to AMB, although this difference was not significant. An ANOVA also demonstrated significant rainfall effects on *P. dilitatum* in 2014 with significant decreases by 81% under SD compared to AMB. In winter, on the other hand, there was no evidence of rainfall effects on any of the dominant species (Fig 4, Table 2). An ANOVA demonstrated significant effects of herbivore addition on the abundance of *H. radicata* in 2014 with increases by 93% compared to control treatment.
 
 <br>
 
-```{r Fig4_dominent, echo=FALSE, fig.height=5, fig.width=6.5, fig.cap="Fig 4. Star plots of dominent species( *Axonopus fissifolius*, *Cymbopogon refractus*, *Cynodon dactlyon*, *Digitaria sp*, *Eragrostis curvula*, *Hypochaeris radicata*, *Microlaena stipoides*, *Paspalum dilitatum* and *Setaria parviflora*) for each rainfall treatment: Ambient (AMB), Increased (IR), Reduced (RR), Reduced frequency (RF) and Summer drought (SD)."}
+```{r Fig4_dominant, echo=FALSE, fig.height=5, fig.width=6.5, fig.cap="Fig 4. Star plots of dominant species(*Axonopus fissifolius*, *Cymbopogon refractus*, *Cynodon dactlyon*, *Digitaria sp*, *Eragrostis curvula*, *Hypochaeris radicata*, *Microlaena stipoides*, *Paspalum dilitatum* and *Setaria parviflora*) for each rainfall treatment: Ambient (AMB), Increased (IR), Reduced (RR), Reduced frequency (RF) and Summer drought (SD)."}
 plot_starplot()
 ```
 
@@ -175,47 +174,56 @@ grid.draw(pfg_fig_merged)
 <br>
 
 ## MDS analysis
-We performed MDS to visualise the whole patterns of the plant community for summer (Fig 5) and winter (Fig 6). The first two MDS axes (MDS1 and MDS2) explained 29% and 11% of the total variation for summer and 28% and 16% for winter, respectively. For summer, MDS1 was mainly associated with annual changes in the community, whereas MDS2 was associated with rainfall treatments. The separations between rainfall treatments grew larger with study years, indicating that rainfall treatments caused successions in the community. Consequently, IA and SD distinctively deviated from the other rainfall treatment in 2015 and 2016, respectively. For winter, a large proportion of the variation in the community was associated with annual changes. With respect to rainfall treatments, whilst no clear separation was demonstrated in the MDS ordination in 2013, SD diverged from the others in 2014. 
+We performed MDS to visualise the whole patterns of the plant communities for summer and winter (Fig 5). The first two MDS axes (MDS1 and MDS2) explained 29% and 11% of the total variation for summer and 28% and 16% for winter, respectively. For summer, MDS1 was mainly associated with annual changes in the community, whereas MDS2 was associated with rainfall treatments. The separations between rainfall treatments grew larger with study years, indicating that rainfall treatments caused successions in the community. Consequently, IA and SD distinctively deviated from the other rainfall treatment in 2015 and 2016, respectively. For winter, a large proportion of the variation in the community was associated with annual changes. With respect to rainfall treatments, whilst no clear separation was demonstrated in the MDS ordination in 2013, SD diverged from the others in 2014. 
 
-```{r Fig5_mds_summer, echo=FALSE, fig.height=3.5, fig.width=6.5, results='hide', fig.cap="Fig 5. Ordination plot of multidimensional scaling (MDS) on the plant community in summer. The proportions of variation of the community explained by the first two axes of MDS (MDS1 and MDS2) are shown in parentheses"}
-fig_pcoa_summer
-```
-
-<br>
-
-```{r Fig6_mds_winter, echo=FALSE, fig.height=3.5, fig.width=4.3, results='hide', fig.cap="Fig 6. Ordination plot of multidimensional scaling (MDS) on the plant community in winter. The proportions of variation of the community explained by the first two axes of MDS (MDS1 and MDS2) are shown in parentheses"}
-fig_PCoA_winter
+```{r Fig5_mds, echo=FALSE, fig.height=5, fig.width=6.5, results='hide', fig.cap="Fig 5. Ordination plot of multidimensional scaling (MDS) on the plant communities in summer and winter. The proportions of variation of the community explained by the first two axes of MDS (MDS1 and MDS2) are shown in parentheses."}
+grid.draw(merged_MDS)
 ```
 
 <br>
 
 ## Principal response curve (PRC) and PERMANOVA
-We performed principal response curve (PRC) models on the first principal axis for summer and winter (Fig 7). Permutation tests demonstrated significant time-dependent rainfall treatment effects on the communities for both of summer (*F*(1, 75)=5.0, *P* < 0.05) and winter (*F*(1, 50)=3.5, *P* < 0.05). Furthermore, we performed PERMANOVAs for each harvesting event separately. This demonstrated significant rainfall effects on the community in the summer 2016 (Table 3, *F*(4,25) = 1.9, *P* < 0.05), but not for the other harvests. The PRC diagrams for summer and winter generally supported the trends demonstrated in MDS ordination plots along the MDS1 (Fig 5, Fig 6). The community under SD increasingly diverged from the other rainfall treatments with the study years for both of summer and winter.
+We performed principal response curve (PRC) models on the first principal axis for summer and winter (Fig 7). Permutation tests demonstrated significant time-dependent rainfall treatment effects on the communities for both of summer (*F*(1, 75)=5.0, *P* < 0.05) and winter (*F*(1, 50)=3.5, *P* < 0.05). Furthermore, we performed PERMANOVAs for each harvesting event separately. This demonstrated significant rainfall effects on the community in the summer 2016 (Table 3, *F*(4,25) = 1.9, *P* < 0.05), but not for the other harvests. The PRC diagrams for summer and winter generally supported the trends demonstrated in MDS ordination plots along the MDS1 (Fig 5) and in the analyses for dominant species (Fig 4). The community under SD increasingly diverged from the other rainfall treatments with the study years for both of summer and winter. In summer, this was especially derived from increased abundance of *C. dactlyon* decreased abundance of *M. stipoides* under SD relative to AMB (Fig 4, Fig 7).
 
-```{r Fig7, echo=FALSE, fig.height=4, fig.width=6, results='asis', fig.cap="PRC for summer and winter harvests", fig.subcap=c("Summer", "Winter")}
-get_prc_fig_smmr()
-mtext(text = "Summer", side = 3)
-get_prc_fig(prc_effect_wint, prc_sp_wint, ylim = c(-2, 2))
-mtext(text = "Winter", side = 3)
+<br>
+
+```{r Fig7, echo=FALSE, fig.height=4, fig.width=6.5, results='asis', fig.cap="Fig 7. Principal response curves (PRCs) for summer and winter harvests. Species weight are shown along the right y axis for species with the total abundance >100 g m^-2^: *Axonopus fissifolius*, *Bothriochloa macra*, *Cymbopogon refractus*, *Cynodon dactlyon*, *Digitaria sp.*, *Eragrostis curvula*, *Lolium perenne*, *Microlaena stipoides*, *Paspalum dilitatum*, *Plantago lanceolata*, *Setaria parviflora* and *Sida rhombifolia*"}
+plot_prc_fig()
 ```
 
 
 ```{r permanova, echo=FALSE, results='asis'}
-emphasize.italics.cols(4)
-emphasize.strong.cells(cbind(which(prmnv_res_tbl[,4] < .05), 4))
-pander(prmnv_res_tbl, caption = "Table 3. Results of PERMANOVA for each harvest for each year with 9999 permutations. The Bray-Curtis dissimilarity was used.")
-
+p_tbl <- prmnv_res_tbl %>% 
+  mutate(Year     = gsub("_.*", "", .id),
+         Season   = gsub(".*_", "", .id),
+         pseudo_F = gsub("F", "*F*", pseudo_F),
+         R2       = round(R2, 2),
+         P        = round(P, 3)) %>% 
+  rename(`*R^2^*`     = R2,
+         `Psuedo-*F*` = pseudo_F,
+         `*P*`        = P) %>%
+  mutate(Season = ifelse(duplicated(Season), "", Season)) %>% 
+  select(Season, Year, `Psuedo-*F*`, everything(), -.id)
+emphasize.italics.cols(5)
+emphasize.strong.cells(cbind(which(p_tbl[,5] < .05), 5))
+pander(p_tbl, caption = "Table 3. Results of PERMANOVA for each harvest for each year with 9999 permutations. The Bray-Curtis dissimilarity was used.")
 ```
 
 <br>
 
 ## Plant traits
-We assess the effects of rainfall treatments on plant traits: specific number of root forks and tips, root length and surface area and shoot:root ratios. There was little evidence of rainfall effects on the traits within the same species. Nevertheless, significant rainfall effects on specific root length and the number of tips and forks were found for *Axonopus fissifolius* but not for the other species. All the assessed plant traits substantially varied between species (Table S2, *P* < 0.001). In general, *Lolium perenne* demonstrated high values for the root traits, indicating that it had thinner roots compared to the other species. Although *Bromus* and *Lotus* also demonstrated relatively high values for the root traits, there was only single measurement; hence, within-species variations were not captured. By contrast, *Hypochaeris radicata*, *Microlaena stipoides* and *Paspalum dilatatum* showed relatively low values for the root traits. indicating thick roots. With respect to shoot:root ratios, *Eragrostis* and *Vicia* demonstrated high ratios, whilst *Hypochaeris radicata* and *Microlaena stipoides* low ratios. We further assessed the community-level plant traits by computing abundance-weighted averages for each harvesting event. There was little evidence of rainfall treatment effects on any of the assessed plant traits at the community level (Table 1, Table 2, Fig 8). Nevertheless, ANOVA demonstrated significant treatment effects on the specific number of the root forks at the community level in winter 2014 (Table 2).
+We assess the effects of rainfall treatments on plant traits: specific number of root forks and tips, root length and surface area and shoot:root ratios. There was little evidence of rainfall effects on the traits within the same species. Nevertheless, significant rainfall effects on specific root length and the number of tips and forks were found for *Axonopus fissifolius* but not for the other species. All the assessed plant traits substantially varied between species (Fig 9, Table S2, *P* < 0.001). In general, *Lolium perenne* demonstrated high values for the root traits, indicating that it had thinner roots compared to the other species. Although *Bromus* and *Lotus* also demonstrated relatively high values for the root traits, there was only single measurement; hence, within-species variations were not captured. By contrast, *Hypochaeris radicata*, *Microlaena stipoides* and *Paspalum dilatatum* showed relatively low values for the root traits. indicating thick roots. With respect to shoot:root ratios, *Eragrostis* and *Vicia* demonstrated high ratios, whilst *Hypochaeris radicata* and *Microlaena stipoides* low ratios. We further assessed the community-level plant traits by computing abundance-weighted averages for each harvesting event. There was little evidence of rainfall treatment effects on any of the assessed plant traits at the community level (Table 1, Table 2, Fig 8). Nevertheless, ANOVA demonstrated significant treatment effects on the specific number of the root forks at the community level in winter 2014 (Table 2).
 
+<br>
 
-
-```{r Fig8_plant_trait, echo=FALSE, fig.height=8.5, fig.width=6.5, results='asis', fig.cap="Fig 8. Abundance-weighted means of community-level plant traits"}
+```{r Fig8_plant_trait, echo=FALSE, fig.height=8.5, fig.width=6.5, results='asis', fig.cap="Fig 8. Abundance-weighted means of community-level plant traits."}
 grid.draw(trait_plot_merged)
+```
+
+<br>
+
+```{r Fig9_trait_bySpp, echo=FALSE, fig.height=4, fig.width=6.5, results='asis', fig.cap="Fig 9.  Box-whisker plots of plant traits summarised by species."}
+grid.draw(trait_fig_bySpp_merged)
 ```
 
 
@@ -225,7 +233,7 @@ grid.draw(trait_plot_merged)
 ```{r cats_tbl, echo=FALSE, results='asis'}
 emphasize.strong.cells(cbind(which(rql_res[, 7] <= 0.05), 7))
 emphasize.italics.cols(7)
-pander(rql_res, caption = "Summary of results of forth corner models for each harvest")
+pander(rql_res, caption = "Summary of results of forth corner models for each harvest.")
 ```
 
 
@@ -237,21 +245,69 @@ l_ply(rql_plt_l, print)
 
 ## Supplementary
 ```{r TableS1_anova_tbl, echo=FALSE, results='asis', warning=FALSE}
-emphasize.strong.cells(cbind(which(summary_tbl[, 5] <= 0.05), 5))
+summary_tbl_ed <- summary_tbl %>%
+  mutate(variable = dplyr::recode_factor(variable, 
+                                         live                 = "Live biomass", 
+                                         Dead                 = "Dead biomass", 
+                                         total                = "Total biomass", 
+                                         c34ratios            = "C~3~:C~4~ ratio", 
+                                         grprop               = "Grass proportion", 
+                                         H                    = "*H'*", 
+                                         J                    = "*J'*", 
+                                         S                    = "*S*", 
+                                         Forks                = "Root forks", 
+                                         Tips                 = "Root tips", 
+                                         sr_ratio             = "Shoot:root ratios", 
+                                         total_L              ="Root length", 
+                                         total_SA             = "Root surface area",
+                                         Axonopus.fissifolius = "*Axonopus fissifolius*",
+                                         Cymbopogon.refractus = "*Cymbopogon refractus*",
+                                         Cynodon.dactlyon     = "*Cynodon dactlyon*",
+                                         Digitaria.sp         = "*Digitaria sp*",
+                                         Eragrostis.curvula   = "*Eragrostis curvula*",
+                                         Hypochaeris.radicata = "*Hypochaeris radicata*",
+                                         Microlaena.stipoides = "*Microlaena stipoides*",
+                                         Paspalum.dilitatum   = "*Paspalum dilitatum*",
+                                         Setaria.parviflora   = "*Setaria parviflora*"),
+         `F` = gsub("F", "*F*", `F`)) %>% 
+  arrange(variable) %>%
+  rename(`*F*-test` = `F`,
+         `*P*`      = P,
+         Year       = year) %>% 
+  mutate(Variable = ifelse(duplicated(variable), "", as.character(variable))) %>% 
+  group_by(variable) %>% 
+  mutate(Season = ifelse(duplicated(season), "", as.character(season))) %>% 
+  ungroup() %>% 
+  select(Variable, Season, Year, everything(), -variable, -season) 
+
+emphasize.strong.cells(cbind(which(summary_tbl_ed[, 5] <= 0.05), 5))
 emphasize.italics.cols(5)
-pander(summary_tbl[, 1:5], split.table = Inf, caption = "Table S1. Results of one-way ANOVAs. Degrees of freedom used for *F* tests are shown in parentheses")
+pander(summary_tbl_ed[, 1:5], split.table = Inf, caption = "Table S1. Results of one-way ANOVAs. Degrees of freedom used for *F* tests are shown in parentheses")
 
 ```
 
 <br>
 
 ```{r TableS2_plant_traits, echo=FALSE, warning=FALSE}
-a <- smmry_anova_bySpp_tbl %>% 
+a <- smmry_anova_bySpp_tbl %>%
+  mutate(`F` = gsub("F", "*F*", `F`), 
+         unit = gsub("mg-1", "mg^-1^", unit), 
+         trait = dplyr::recode_factor(trait, 
+                               length = "Root length",
+                               `surface area` = "Root SA",
+                               forks = "Root forks",
+                               tips = "Root tips",
+                               shoot_root_ratio = "Shoot:root ratio"),
+         P = "_**<0.001**_") %>% 
   gather(spp, value, -trait, -unit, -F, -P) %>% 
   gather(variable, value2, -spp, -trait) %>% 
   spread(trait, value2) %>% 
   filter(!(spp != "Axonopus" & variable %in% c("F", "P", "unit"))) %>% 
-  mutate(variable = ifelse(variable == "value", spp, variable)) %>% 
+  mutate(variable = ifelse(variable == "value", spp, variable),
+         variable = dplyr::recode(variable,
+                                  F = "*F*-test",
+                                  P = "*P*")) %>% 
+  rename(" " = variable) %>% 
   select(-spp)
 
 pander(a, split.table = Inf, caption = "Table S2. Results of one-way ANOVA for species comparisons and summary with Mean±SE. SE is NA when *n* < 2. Where there was a significant treatment effect at *P* < 0.05, post-hoc tests were performed. The results of post-hoc comparisons are shown by letters alongside parentheses")

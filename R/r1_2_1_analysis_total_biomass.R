@@ -271,12 +271,19 @@ Anova(Dead_w_m2)
 
 # summary df
 summary_ab_biom <- filter(anv_psthc_rslt, variable %in% c("total", "live", "Dead"))
-  
 
 # create plots
 fig_ab_biom <- dlply(summary_ab_biom, .(variable), function(x){
-  ggplot(data = x, aes(x = year, y = response, fill = treatment)) +
-    facet_grid(. ~ season, scales = "free_x", space = "free_x") +
+  d <- filter(x, season == "Winter") %>% 
+    slice(1) %>% 
+    mutate(response = NA, 
+           lower.CL = NA,
+           upper.CL = NA,
+           year = "2015") %>% 
+    bind_rows(x)
+
+  ggplot(data = d, aes(x = year, y = response, fill = treatment)) +
+    facet_grid(. ~ season, scales = "free_x") +
     labs(x = "Year") +
     
     geom_bar(stat = "identity", position = position_dodge(.9)) +

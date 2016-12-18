@@ -51,10 +51,10 @@ get_mean_se <- function(x, round.val = 2, ...){
 }
 
 
-# This returns response ratios aginst RR
+# This returns response ratios aginst control
 get_rr <- function(x, contr.pos = 1){
   # contr.pos: element position for control (i.e. Ambient)
-  x / x[contr.pos]
+  x / x[contr.pos] - 1
 }
 
 

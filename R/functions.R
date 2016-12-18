@@ -215,7 +215,7 @@ get_prc_effect_df <- function(prc.mod, site.df){
 
 # This creates a PRC plot using a df with effect size of PRC (see
 # get_prc_effect_df)
-get_prc_fig <- function(effect.df, sp.df, mai = c(1, .8, .2, 1.5), ...){
+get_prc_fig <- function(effect.df, sp.df, mai = c(1, .8, .2, 1.5), add.legend = TRUE, ...){
   
   # effect.df: df with effect size computed from PRC result (get_prc_effect_df)
   # sp.df    : species and species scores to be plotted together with the effect size
@@ -233,7 +233,8 @@ get_prc_fig <- function(effect.df, sp.df, mai = c(1, .8, .2, 1.5), ...){
     lines(eff ~ as.numeric(year), data = x, col = colval)
     points(eff ~ as.numeric(year), data = x, col = colval, pch = 19)
   })
-  legend("bottomleft", col = rain_cols, legend = levels(effect.df$treatment), pch = 19, bty = "n")
+  if(add.legend) legend("bottomleft", col = rain_cols, legend = levels(effect.df$treatment), 
+                        pch = 19, bty = "n", cex = .7)
   axis(side = 4, tck = .03, at = sp.df[, 1], 
        labels = row.names(sp.df), las = 2, cex.axis = .7)
 }

@@ -150,16 +150,36 @@ range(prc_sp_smmr[,1])
 range(prc_effect_wint$eff)
 range(prc_sp_wint[,1])
 
+row.names(prc_sp_smmr) 
+
+summer_sp <- row.names(prc_sp_smmr)
+winter_sp <- row.names(prc_sp_wint)
+row.names(prc_sp_smmr) <- paste(substr(summer_sp, 1, 1), 
+                                gsub(".*[.]", "", row.names(prc_sp_smmr)), sep = ".")
+row.names(prc_sp_wint) <- paste(substr(winter_sp, 1, 1), 
+                                gsub(".*[.]", "", row.names(prc_sp_wint)), sep = ".")
 get_prc_fig_smmr <- function(){
-  get_prc_fig(prc_effect_smmr, prc_sp_smmr, ylim = c(-3, 3))
+  get_prc_fig(prc_effect_smmr, prc_sp_smmr, ylim = c(-3, 3), main = "Summer",
+              mai = c(1, .8, .2, 1))
   text(x = 3, y = max(prc_effect_smmr$eff) * 1.1, labels = "*", cex = 2)  # add star for the year where significant treatment effects were found
 }
 get_prc_fig_smmr()
 
 
-get_prc_fig(prc_effect_wint, prc_sp_wint, ylim = c(-1.6, 2.7))
 
-par(mfrow = c(2, 1))
-get_prc_fig_smmr()
-get_prc_fig(prc_effect_wint, prc_sp_wint, ylim = c(-1.3, 1.3))
+plot_prc_fig <- function(){
+  layout(matrix(c(1,2), 1, 2, byrow = TRUE), widths = c(2, 1.2))
+  get_prc_fig_smmr()
+  get_prc_fig(prc_effect_wint, prc_sp_wint, ylim = c(-1.6, 2.7), 
+              add.legend = FALSE, main = "Winter", mai = c(1, .3, .2, 1))
+}
+
+pdf(file = "Output/Figs/PRC.pdf", width = 6.5, height = 4)
+plot_prc_fig()
+dev.off()
+
+
+save_png600(filename = "Output/Figs/PRC.png", width = 6.5, height = 4)
+plot_prc_fig()
+dev.off()
 

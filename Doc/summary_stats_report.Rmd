@@ -24,8 +24,9 @@ library(vegan)
 # knitr::opts_chunk$set(echo = TRUE, fig.path='Figs_report/DRIGRASS_harvest_',
 #                       dev=c('pdf', 'png'), dpi = 600)
 knitr::opts_chunk$set(echo = TRUE, dpi=600)
-load("../Data/all_obj_traits.RData") # results from plant traits
+
 load("../Output/Data/all_obj.RData")
+load("../Data/all_obj_traits.RData") # results from plant traits
 
 theme_set(theme_bw()) 
 
@@ -107,15 +108,15 @@ sst_winter <- sst %>%
   filter(season == "Winter") %>% 
   select(-season) %>% 
   .[!apply(., 2, function(x) all(is.na(x)))]
+sst_winter[is.na(sst_winter)] <- "-"
 
-
-pander(sst_summer, split.cell = 2, split.table = Inf, caption = "Table 1. Summary results of analysis of variances (ANVOAs) with herbivore (Herb), rainfall (Rain) and their interaction (RxH) as fixed factors for summer harvests on the following response variables: live, dead, and total biomass, C3:C4 ratios, the proportion of grasses in the total abundance, diversity indices (Shannon-Wiener diversity index (*H'*), Pielou’s evenness (*J'*) and species richness (*S*)), the community-weighted averages of plant traits  (the number of root forks and tips, total root length and surface area, and shoot:root ratios) and dominant species. The plant traits, except shoot:root ratios, were expresses on root mass basis. Significance codes are *P* < 0.5 (\\*), < 0.01 (\\**), and < 0.001 (\\***), respectively, otherwise shown as ns (not significant). *F* values and associated degrees of freedom used for the ANOVAs are shown in Tables S1.")
+pander(sst_summer, split.cell = 2, split.table = Inf, caption = "Table 1. Summary results of analysis of variances (ANVOAs) with herbivore (Herb), rainfall (Rain) and their interaction (RxH) as fixed factors for summer harvests on the following response variables: live, dead, and total biomass, C~3~:C~4~ ratios, the proportion of grasses in the total abundance, diversity indices (Shannon-Wiener diversity index (*H'*), Pielou’s evenness (*J'*) and species richness (*S*)), the community-weighted averages of plant traits  (the number of root forks and tips, total root length and surface area, and shoot:root ratios) and dominant species. The plant traits, except shoot:root ratios, were expresses on root mass basis. Significance codes are *P* < 0.05 (\\*), < 0.01 (\\**), and < 0.001 (\\***), respectively, otherwise shown as ns (not significant). *F* values and associated degrees of freedom used for the ANOVAs are shown in Tables S1.")
 ```
 
 <br>
 
 ```{r Tabl2_stat_winter, echo=FALSE, results='asis'}
-pander(sst_winter, split.cell = 2, split.table = Inf, caption = "Table 2. Summary results of analysis of variances (ANVOAs) with herbivore (Herb), rainfall (Rain) and their interaction (RxH) as fixed factors for winter harvests on the following response variables: live, dead, and total biomass, C3:C4 ratios, the proportion of grasses in the total abundance, diversity indices (Shannon-Wiener diversity index (*H'*), Pielou’s evenness (*J'*) and species richness (*S*)), the community-weighted averages of plant traits  (the number of root forks and tips, total root length and surface area, and shoot:root ratios) and dominant species. The plant traits, except shoot:root ratios, were expresses on root mass basis. Significance codes are *P* < 0.5 (\\*), < 0.01 (\\**), and < 0.001 (\\***), respectively, otherwise shown as ns (not significant). *F* values and associated degrees of freedom used for the ANOVAs are shown in Tables S1.")
+pander(sst_winter, split.cell = 2, split.table = Inf, caption = "Table 2. Summary results of analysis of variances (ANVOAs) with herbivore (Herb), rainfall (Rain) and their interaction (RxH) as fixed factors for winter harvests on the following response variables: live, dead, and total biomass, C~3~:C~4~ ratios, the proportion of grasses in the total abundance, diversity indices (Shannon-Wiener diversity index (*H'*), Pielou’s evenness (*J'*) and species richness (*S*)), the community-weighted averages of plant traits  (the number of root forks and tips, total root length and surface area, and shoot:root ratios) and dominant species. The plant traits, except shoot:root ratios, were expresses on root mass basis. Significance codes are *P* < 0.05 (\\*), < 0.01 (\\**), and < 0.001 (\\***), respectively, otherwise shown as ns (not significant). *F* values and associated degrees of freedom used for the ANOVAs are shown in Tables S1.")
 
 ```
 
@@ -123,7 +124,7 @@ pander(sst_winter, split.cell = 2, split.table = Inf, caption = "Table 2. Summar
 
 ## Biomass
 ### Total, live and dead
-ANOVAs demonstrated significant rainfall treatment effects on above-ground live biomass in summer (Table 1, Fig 1), but no effects of herbivore addition. In general, live biomass in SD was significantly lower than the other rainfall treatments, with  72% (*P* < 0.05), 16% (*P* > 0.05) and 58% (*P* < 0.05) decreases relative to AMB treatment in 2014, 2015 and 2016, respectively. The highest live biomass was observed in IA with 23%, 54% and 33% increases relative to AMB in 2014, 2015 and 2016, respectively, although these differences were not significant. There was no evidence of rainfall effects on live biomass in winter (Table 2, Fig 1). Although an ANOVA demonstrated significant effects of herbivore addition in the winter 2013, this was owing to initial spatial heterogeneity at the study site as herbivores had not been applied at that time yet. Total biomass generally followed the patterns observed in live biomass. There was little evidence of rainfall treatment effects on dead biomass. Nevertheless, significant treatment effects were found in the winter 2014 with -32% in RA and -18% in SD compared to AMB, although these differences were not significant.  
+ANOVAs demonstrated significant rainfall treatment effects on above-ground live biomass in summer (Table 1, Fig 1), but no effects of herbivore addition. In general, live biomass in SD was significantly lower than the other rainfall treatments, with  72% (*P* < 0.05), 16% (*P* > 0.05) and 58% (*P* < 0.05) decreases relative to AMB treatment in 2014, 2015 and 2016, respectively. The highest live biomass was observed in IR with 23%, 54% and 33% increases relative to AMB in 2014, 2015 and 2016, respectively, although these differences were not significant. There was no evidence of rainfall effects on live biomass in winter (Table 2, Fig 1). Although an ANOVA demonstrated significant effects of herbivore addition in the winter 2013, this was owing to initial spatial heterogeneity at the study site as herbivores had not been applied at that time yet. Total biomass generally followed the patterns observed in live biomass. There was little evidence of rainfall treatment effects on dead biomass. Nevertheless, significant treatment effects were found in the winter 2014 with -32% in RR and -18% in SD compared to AMB, although these differences were not significant.  
 
 <br>
 
@@ -136,16 +137,16 @@ grid.draw(ab_biom_plot_merged)
 ### Biomass allocation
 We assessed biomass allocation from above- and below-ground comprehensive harvest conducted in September 2015. ANOVAs demonstrated no significant rainfall effects on any of above-, below-ground biomass or above:blow-ground biomass ratios (Fig 2).
 
-```{r Fig2_biomass_allocation, echo=FALSE, warning=FALSE, fig.width=5, fig.height=5, fig.cap="Fig 2. Above- and below-ground biomass (Mean ± 95%CI). Confidence intervals (CIs) were estimated from linear models. When response variables were transformed for the linear model analysis (ANOVA), estimated CIs were reverse transformed prior to plotting."}
+```{r Fig2_biomass_allocation, echo=FALSE, warning=FALSE, fig.width=3, fig.height=2, fig.cap="Fig 2. Above- and below-ground biomass (Mean ± 95%CI). Confidence intervals (CIs) were estimated from linear models. When response variables were transformed for the linear model analysis (ANOVA), estimated CIs were reverse transformed prior to plotting."}
 fig_tot_biom
 ```
 
 <br>
 
 ## Diversity indices
-In summer, significant rainfall treatment effects on *H'* were found in 2014 and 2016 but not in 2015 (Table 1, Fig 3). The highest *H'* was observed in AMB throughout the years. Compared to this, that in RF was lower by 26% (*P* < 0.05), 15% (*P* > 0.05) and 31% (*P* < 0.05) in 2014, 2015 and 2016, respectively. *H'* in the other rainfall treatments was not significantly different than that in AMB. *J'* in summer showed similar trends to *H'*, with significant rainfall effects observed in 2016. Whilst *J'* was significantly decreased in RF by 25%, that in the other rainfall treatments were not significant altered compared to AMB. ANOVAs demonstrated significant rainfall effects on *S* in the summer 2015 and 2016 but not in 2014, with the highest value observed in AMB throughout the years. RA in 2015 and SD in 2016 significantly decreased *S* by 20% and 40% relative to AMB, respectively.
+In summer, significant rainfall treatment effects on *H'* were found in 2014 and 2016 but not in 2015 (Table 1, Fig 3). The highest *H'* was observed in AMB throughout the years. Compared to this, that in RF was lower by 26% (*P* < 0.05), 15% (*P* > 0.05) and 31% (*P* < 0.05) in 2014, 2015 and 2016, respectively. *H'* in the other rainfall treatments was not significantly different than that in AMB. *J'* in summer showed similar trends to *H'*, with significant rainfall effects observed in 2016. Whilst *J'* was significantly decreased in RF by 25%, that in the other rainfall treatments were not significant altered compared to AMB. ANOVAs demonstrated significant rainfall effects on *S* in the summer 2015 and 2016 but not in 2014, with the highest value observed in AMB throughout the years. RR in 2015 and SD in 2016 significantly decreased *S* by 20% and 40% relative to AMB, respectively.
 
-In winter, ANOVAs demonstrated significant rainfall effects on *H'* in 2014 but not in 2013. In 2014, the highest *H'* was observed in SD with 16% increases (*P* > 0.05), whereas the lowest was in RA with 25% decreases (*P* < 0.05) relative to AMB. No evidence of rainfall treatment effects on *J'* was found in winter. *S* showed similar trends to *H'* with significant rainfall treatment effects observed in 2014. RA significantly decreased *S* by 24% compared to AMB. The highest *S* was observed in SD throughout the years with 16% increases relative to AMB, although this difference was not significant.
+In winter, ANOVAs demonstrated significant rainfall effects on *H'* in 2014 but not in 2013. In 2014, the highest *H'* was observed in SD with 16% increases (*P* > 0.05), whereas the lowest was in RR with 25% decreases (*P* < 0.05) relative to AMB. No evidence of rainfall treatment effects on *J'* was found in winter. *S* showed similar trends to *H'* with significant rainfall treatment effects observed in 2014. RR significantly decreased *S* by 24% compared to AMB. The highest *S* was observed in SD throughout the years with 16% increases relative to AMB, although this difference was not significant.
 
 <br>
 
@@ -160,7 +161,7 @@ In summer, dominant species were generally more abundant in AMB and IR compared 
 
 <br>
 
-```{r Fig4_dominant, echo=FALSE, fig.height=5, fig.width=6.5, fig.cap="Fig 4. Star plots of dominant species(*Axonopus fissifolius*, *Cymbopogon refractus*, *Cynodon dactlyon*, *Digitaria sp*, *Eragrostis curvula*, *Hypochaeris radicata*, *Microlaena stipoides*, *Paspalum dilitatum* and *Setaria parviflora*) for each rainfall treatment: Ambient (AMB), Increased (IR), Reduced (RR), Reduced frequency (RF) and Summer drought (SD)."}
+```{r Fig4_dominant, echo=FALSE, fig.height=5, fig.width=6.5, fig.cap="Fig 4. Star plots of dominant species (*Axonopus fissifolius*, *Cymbopogon refractus*, *Cynodon dactlyon*, *Digitaria sp*, *Eragrostis curvula*, *Hypochaeris radicata*, *Microlaena stipoides*, *Paspalum dilitatum* and *Setaria parviflora*) for each rainfall treatment: Ambient (AMB), Increased (IR), Reduced (RR), Reduced frequency (RF) and Summer drought (SD)."}
 plot_starplot()
 ```
 
@@ -174,7 +175,7 @@ grid.draw(pfg_fig_merged)
 <br>
 
 ## MDS analysis
-We performed MDS to visualise the whole patterns of the plant communities for summer and winter (Fig 5). The first two MDS axes (MDS1 and MDS2) explained 29% and 11% of the total variation for summer and 28% and 16% for winter, respectively. For summer, MDS1 was mainly associated with annual changes in the community, whereas MDS2 was associated with rainfall treatments. The separations between rainfall treatments grew larger with study years, indicating that rainfall treatments caused successions in the community. Consequently, IA and SD distinctively deviated from the other rainfall treatment in 2015 and 2016, respectively. For winter, a large proportion of the variation in the community was associated with annual changes. With respect to rainfall treatments, whilst no clear separation was demonstrated in the MDS ordination in 2013, SD diverged from the others in 2014. 
+We performed MDS to visualise the whole patterns of the plant communities for summer and winter (Fig 5). The first two MDS axes (MDS1 and MDS2) explained 29% and 11% of the total variation for summer and 28% and 16% for winter, respectively. For summer, MDS1 was mainly associated with annual changes in the community, whereas MDS2 was associated with rainfall treatments. The separations between rainfall treatments grew larger with study years, indicating that rainfall treatments caused successions in the community. Consequently, IR and SD distinctively deviated from the other rainfall treatment in 2015 and 2016, respectively. For winter, a large proportion of the variation in the community was associated with annual changes. With respect to rainfall treatments, whilst no clear separation was demonstrated in the MDS ordination in 2013, SD diverged from the others in 2014. 
 
 ```{r Fig5_mds, echo=FALSE, fig.height=5, fig.width=6.5, results='hide', fig.cap="Fig 5. Ordination plot of multidimensional scaling (MDS) on the plant communities in summer and winter. The proportions of variation of the community explained by the first two axes of MDS (MDS1 and MDS2) are shown in parentheses."}
 grid.draw(merged_MDS)

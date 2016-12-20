@@ -19,3 +19,7 @@ library(broom)        # export an anova object as a data frame
 library(parallel)     # set up multicores to run permutaion quickly using parallel processing
 library(foreach)      # set up multicores to run permutaion quickly using parallel processing
 library(doParallel)   # set up multicores to run permutaion quickly using parallel processing
+library(mvabund)      # forth coner analysi
+library(lattice)      # create levelplots
+require(gridExtra)    # arrange multiple levelplot from lattice
+library(data.table)   # tstrsplit

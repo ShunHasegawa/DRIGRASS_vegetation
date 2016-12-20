@@ -21,6 +21,9 @@ library(plyr)
 library(dplyr)
 library(tidyr)
 library(vegan)
+library(lattice)
+require(gridExtra)
+
 # knitr::opts_chunk$set(echo = TRUE, fig.path='Figs_report/DRIGRASS_harvest_',
 #                       dev=c('pdf', 'png'), dpi = 600)
 knitr::opts_chunk$set(echo = TRUE, dpi=600)
@@ -46,7 +49,7 @@ lmer_anova_tbl <- function(lmermod, ...){
 
 
 ## To do
-* explain results of forth-corner analysis
+* ~~explain results of forth-corner analysis~~
 * mention plant functional groups
 * ~~add box-whisker plots of plant traits for each species~~
 * ~~replace figures with the ones with better resolution (dpi = 600)~~
@@ -230,16 +233,28 @@ grid.draw(trait_fig_bySpp_merged)
 
 <br>
 
-## Fourth corner models (community assembly via trait selection; CATS)
-```{r cats_tbl, echo=FALSE, results='asis'}
-emphasize.strong.cells(cbind(which(rql_res[, 7] <= 0.05), 7))
-emphasize.italics.cols(7)
-pander(rql_res, caption = "Summary of results of forth corner models for each harvest.")
+## Fourth corner models (community assembly via trait selection)  
+Fourth corner models demonstrated significant interaction effects between rainfall treatment and plant traits on the plant community in the winter 2014, indicating strong association between plant traits and community successions induced by rainfall treatment. Although this was not significant, the final model with the lowest BIC for the summer 2015 kept RR:root length term in the model (Table 8, Fig 10). In the winter 2014, SD was associated positively with specific root length and negatively with shoot:root ratios (Fig 10). This indicated that the species with thin roots and/or low shoot:root ratios (e.g. *L. perenne* and *P .lanceolata*, Fig 9) were relatively more abundant, whereas those with thick roots and/or low shoot:root ratios (e.g. *E. curvula* and *M. stipoides*, Fig 9) were less in SD compared to AMB. In the summer 2015, specific root length was positively associated with RR compared to AMB. This indicated that those thin roots (e.g. *C dactlyon* and *S. parviflora*, Fig 9) were relatively more abundant, whereas those with thick roots (e.g. *M stipoides* and *P. dilitatum*, Fig 9) were less in RR compared to AMB. The results of forth corner models generally support the trend demonstrated in the PRC models (Fig 7).
+
+
+<br>
+
+```{r Table8_4thcorner, echo=FALSE, results='asis'}
+
+rql_res_tbl <- rql_res %>% 
+  mutate(Season = ifelse(duplicated(Season), "", Season),
+         Dev = round(Dev, 2)) %>%
+  rename(`*Pr*(>Dev)` = `Pr(>Dev)`)
+rql_res_tbl[is.na(rql_res_tbl)] <- "-"
+  
+emphasize.strong.cells(cbind(which(rql_res_tbl[, 6] <= 0.05), 6))
+emphasize.italics.cols(6)
+pander(rql_res_tbl, caption = "Table 8. Summary results of environment-trait terms (i.e. interaction between rainfall treatment and plant traits) in fourth corner models. No interaction terms were kept in the final model with the lowest BIC for the summer 2014 and 2016 and the winter 2013.")
 ```
 
 
-```{r cat_plot, echo=FALSE, fig.width=4.5, fig.height=4.5}
-l_ply(rql_plt_l, print)
+```{r Fig10_4thcorner, echo=FALSE, fig.width=6, fig.height=5, fig.cap="Fig 10. Standardised interaction coefficient estimates for interaction terms between rainfall treatment and plant traits from fourth corner analysis with significant environment-trait interactions (see Table 8). The associations for interaction terms in the best model with the lowest BIC are shown in blue or red with color strength representing the strength of associations. Red and blue represent positive and negative association in comparison to control treatment (AMB), respectively. Rainfall treatments are Increased (IR), Reduced (RR), Reduced frequency (FR) and Summer drought (SD). Root length and tips are root mass basis. No interaction terms were kept in the final model for the summer 2014 and 2016 and the winter 2013."}
+grid.arrange(rql_plt_l[[1]],rql_plt_l[[2]], ncol=1)
 ```
 
 
